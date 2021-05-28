@@ -1,0 +1,16 @@
+{
+    "creators": [
+        {
+            "affiliation": "Universitat Rovira i Virgili, Spain",
+            "name": "Fernández, Alberto",
+            "orcid": "0000-0002-1241-1646"
+        },
+        {
+            "affiliation": "Universitat Rovira i Virgili, Spain",
+            "name": "Gómez, Sergio",
+            "orcid": "0000-0003-1820-0062"
+        }
+    ],
+    "description": "mdendro: Extended Agglomerative Hierarchical Clustering in R",
+    "title": "mdendro"
+}
