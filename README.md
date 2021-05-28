@@ -25,8 +25,7 @@ All this functionality is obtained with two functions: `linkage`, and `descplot`
 ## References
 
 1. A. Fernández, S. Gómez. Solving non-uniqueness in agglomerative hierarchical clustering using multidendrograms. _Journal of Classification_ **25**, 43-65 (2008). [DOI:10.1007/s00357-008-9004-x](https:/doi.org/10.1007/s00357-008-9004-x).
-2.
-A. Fernández, S. Gómez. Versatile linkage: A family of space-conserving strategies for agglomerative hierarchical clustering. _Journal of Classification_ **37**, 584-597 (2020). [DOI:10.1007/s00357-019-09339-z](https:/doi.org/10.1007/s00357-019-09339-z).
+2. A. Fernández, S. Gómez. Versatile linkage: A family of space-conserving strategies for agglomerative hierarchical clustering. _Journal of Classification_ **37**, 584-597 (2020). [DOI:10.1007/s00357-019-09339-z](https:/doi.org/10.1007/s00357-019-09339-z).
 
 
 ## Authors
