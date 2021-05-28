@@ -1,0 +1,768 @@
+---
+title: "_mdendro_"
+subtitle: "Extended Agglomerative Hierarchical Clustering"
+author: "Alberto Fernández, Sergio Gómez"
+date: "v2.0 (2021-05-28)"
+bibliography: mdendro-vignette-references.bib
+csl: mdendro-vignette-bibstyle.csl
+output:
+  rmarkdown::html_document:
+    theme: cerulean
+    highlight: tango
+    css: mdendro-vignette-style.css
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+vignette: >
+  %\VignetteIndexEntry{_mdendro_}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+
+## Description
+
+R package [**mdendro**](https://github.com/sergio-gomez/mdendro) enables the calculation of **agglomerative hierarchical clustering** (AHC), extending the standard functionalities in several ways:
+
+- Native handling of both **similarity** and **dissimilarity** (distances) matrices.
+
+- Calculation of pair-group dendrograms and variable-group **multidendrograms** [[@Fernandez2008]](#bibliography).
+
+- Implementation of the most common AHC methods in both **weighted** and **unweighted** forms: single linkage, complete linkage, average linkage (UPGMA and WPGMA), centroid (UPGMC and WPGMC), and Ward.
+
+- Implementation of two additional parametric families of methods: **versatile linkage** [[@Fernandez2020]](#bibliography), and **beta flexible**. Versatile linkage leads naturally to the definition of two additional methods: _harmonic linkage_, and _geometric linkage_.
+
+- Calculation of the **cophenetic** (or **ultrametric**) matrix.
+
+- Calculation of five **descriptors** of the final dendrogram: _cophenetic correlation coefficient_, _space distortion ratio_, _agglomerative coefficient_, _chaining coefficient_, and _tree balance_.
+
+- Plots of the descriptors for the parametric methods.
+
+All this functionality is obtained with two functions: `linkage`, and `descplot`. Function `linkage` may be considered as a replacement for functions `hclust` (in package [stats](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/00Index.html)) and `agnes` (in package [cluster](https://stat.ethz.ch/R-manual/R-devel/library/cluster/html/00Index.html)). To enhance usability and interoperability, the `linkage` class includes several methods for plotting, summarizing information, and class conversion.
+
+
+
+## Installation
+
+There exist two main ways to install [**mdendro**](https://github.com/sergio-gomez/mdendro):
+
+- Installation from CRAN (recommended method):
+    ```{r eval = FALSE}
+    install.packages("mdendro")
+    ```
+    [RStudio](https://www.rstudio.com/) has a menu entry (Tools $\rightarrow$ Install Packages) for this job.
+
+- Installation from GitHub (you may need to install first [devtools](https://github.com/hadley/devtools)):
+    ```{r eval = FALSE}
+    install.packages("devtools")
+    library(devtools)
+    install_github("sergio-gomez/mdendro")
+    ```
+Since [**mdendro**](https://github.com/sergio-gomez/mdendro) includes C++ code, you may need to install first [Rtools](https://cran.r-project.org/bin/windows/Rtools/) in Windows, or [Xcode](https://developer.apple.com/xcode/) in MacOS.
+
+
+
+## Tutorial
+
+### Basics
+
+Let us start by using the `linkage` function to calculate the complete linkage AHC of the `UScitiesD` dataset, a matrix of distances between a few US cities:
+
+```{r}
+library(mdendro)
+lnk <- linkage(UScitiesD, method = "complete")
+```
+
+Now we can plot the resulting dendrogram:
+
+```{r}
+plot(lnk)
+```
+
+The summary of this dendrogram is:
+
+```{r}
+summary(lnk)
+```
+
+In particular, you can recognize the calculated descriptors:
+
+- `cor`: cophenetic correlation coefficient
+- `sdr`: space distortion ratio
+- `ac`: agglomerative coefficient
+- `cc`: chaining coefficient
+- `tb`: tree balance
+
+It is possible to work with similarity data without having to convert them to distances, provided they are in range [0.0, 1.0]. A typical example would be a matrix of non-negative correlations:
+
+```{r}
+sim <- as.dist(Harman23.cor$cov)
+lnk <- linkage(sim, type.prox = "sim")
+plot(lnk, main = "Harman23")
+```
+
+There is also the option to choose between unweighted (default) and weighted methods:
+
+```{r}
+par(mfrow = c(1, 2))
+cars <- round(dist(scale(mtcars)), digits = 3)
+nodePar <- list(cex = 0, lab.cex = 0.4)
+
+lnk1 <- linkage(cars, method = "arithmetic")
+plot(lnk1, main = "unweighted", nodePar = nodePar)
+
+lnk2 <- linkage(cars, method = "arithmetic", weighted = TRUE)
+plot(lnk2, main = "weighted", nodePar = nodePar)
+```
+
+When there are tied minimum distances in the agglomeration process, you may ignore them and proceed choosing a random pair (pair-group methods) or agglomerate them all at once (variable-group multidendrograms). With `linkage` you can use both approaches, being multidendrograms the default one:
+
+```{r}
+par(mfrow = c(1, 2))
+cars <- round(dist(scale(mtcars)), digits = 1)
+nodePar <- list(cex = 0, lab.cex = 0.4)
+
+lnk1 <- linkage(cars, method = "complete")
+plot(lnk1, main = "multidendrogram", nodePar = nodePar)
+
+lnk2 <- linkage(cars, method = "complete", group = "pair")
+plot(lnk2, main = "pair-group", nodePar = nodePar)
+```
+
+While multidendrograms are unique, you may obtain structurally different pair-group dendrograms by just reordering the data. As a consequence, the descriptors are invariant to permutations for multidendrograms, but not for pair-group dendrograms:
+
+```{r collapse = TRUE}
+cars <- round(dist(scale(mtcars)), digits = 1)
+lnk1 <- linkage(cars, method = "complete")
+lnk2 <- linkage(cars, method = "complete", group = "pair")
+
+# apply random permutation to data
+set.seed(666)
+ord <- sample(attr(cars, "Size"))
+cars_p <- as.dist(as.matrix(cars)[ord, ord])
+lnk1p <- linkage(cars_p, method = "complete")
+lnk2p <- linkage(cars_p, method = "complete", group = "pair")
+
+# compare original and permuted cophenetic correlation
+c(lnk1$cor, lnk1p$cor)
+c(lnk2$cor, lnk2p$cor)
+
+# compare original and permuted tree balance
+c(lnk1$tb, lnk1p$tb)
+c(lnk2$tb, lnk2p$tb)
+```
+
+In multidendrograms, the ranges (rectangles) show the heterogeneity between distances within the group, but they are optional in the plots:
+
+```{r}
+par(mfrow = c(1, 2))
+cars <- round(dist(scale(mtcars)), digits = 1)
+nodePar <- list(cex = 0, lab.cex = 0.4)
+lnk <- linkage(cars, method = "complete")
+plot(lnk, col.rng = "bisque", main = "with ranges", nodePar = nodePar)
+plot(lnk, col.rng = NULL, main = "without ranges", nodePar = nodePar)
+```
+
+Plots including ranges are only available if you directly use the `plot.linkage` function from [**mdendro**](https://github.com/sergio-gomez/mdendro). Anyway, you may still take advantage of other dendrogram plotting packages, such as [dendextend](https://CRAN.R-project.org/package=dendextend) and [ape](https://CRAN.R-project.org/package=ape):
+
+```{r}
+par(mfrow = c(1, 2))
+cars <- round(dist(scale(mtcars)), digits = 1)
+lnk <- linkage(cars, method = "complete")
+
+lnk.dend <- as.dendrogram(lnk)
+plot(dendextend::set(lnk.dend, "branches_k_color", k = 4),
+     main = "dendextend package",
+     nodePar = list(cex = 0.4, lab.cex = 0.5))
+
+lnk.hcl <- as.hclust(lnk)
+pal4 <- c("red", "forestgreen", "purple", "orange")
+clu4 <- cutree(lnk.hcl, 4)
+plot(ape::as.phylo(lnk.hcl),
+     type = "fan",
+     main = "ape package",
+     tip.color = pal4[clu4],
+     cex = 0.5)
+```
+
+In addition, you can also use the `linkage` function to plot heatmaps containing multidendrograms:
+
+```{r}
+heatmap(scale(mtcars), hclustfun = linkage)
+```
+
+
+
+### Linkage methods
+
+The list of available AHC linkage methods is the following: _single_, _complete_, _arithmetic_, _geometric_, _harmonic_, _versatile_, _ward_, _centroid_ and _flexible_. Their equivalences with the methods in other packages can be found [below](#equivalences-with-other-packages). The default method is _arithmetic_, which is also commonly known as _average linkage_ or _UPGMA_.
+
+```{r}
+par(mfrow = c(3, 3))
+methods <- c("single", "complete", "arithmetic",
+             "geometric", "harmonic", "versatile",
+             "ward", "centroid", "flexible")
+
+for (m in methods) {
+  lnk <- linkage(UScitiesD, method = m)
+  plot(lnk, cex = 0.6, main = m)
+}
+```
+
+Two of the methods, _versatile_ and _flexible_, depend on a parameter that takes values in (-Inf, +Inf) for _versatile_, and in [-1.0, +1.0] for _flexible_. Here come some examples:
+
+```{r}
+par(mfrow = c(2, 3))
+
+vals <- c(-10.0, 0.0, 10.0)
+for (v in vals) {
+  lnk <- linkage(UScitiesD, method = "versatile", par.method = v)
+  plot(lnk, cex = 0.6, main = sprintf("versatile (%.1f)", v))
+}
+
+vals <- c(-0.8, 0.0, 0.8)
+for (v in vals) {
+  lnk <- linkage(UScitiesD, method = "flexible", par.method = v)
+  plot(lnk, cex = 0.6, main = sprintf("flexible (%.1f)", v))
+}
+```
+
+It is interesting to know how the descriptors depend on those parameters. Package [**mdendro**](https://github.com/sergio-gomez/mdendro) provides a specific function for this task, namely `descplot`. For example, using _versatile_ linkage:
+
+```{r}
+par(mfrow = c(2, 3))
+measures <- c("cor", "sdr", "ac", "cc", "tb")
+vals <- c(-Inf, (-20:+20), +Inf)
+for (m in measures)
+  descplot(UScitiesD, method = "versatile",
+           measure = m, par.method = vals,
+           type = "o",  main = m, col = "blue")
+```
+
+Similarly for the _flexible_ method:
+
+```{r}
+par(mfrow = c(2, 3))
+measures <- c("cor", "sdr", "ac", "cc", "tb")
+vals <- seq(from = -1, to = +1, by = 0.1)
+for (m in measures)
+  descplot(UScitiesD, method = "flexible",
+           measure = m, par.method = vals,
+           type = "o",  main = m, col = "blue")
+```
+
+
+
+### Comparison with other packages
+
+For comparison, the same AHC can be found using functions `hclust` and `agnes`, where the default plots just show some differences in aesthetics:
+
+```{r}
+library(mdendro)
+lnk <- linkage(UScitiesD, method = "complete")
+
+library(cluster)
+agn <- agnes(UScitiesD, method = "complete")
+
+# library(stats)   # unneeded, stats included by default
+hcl <- hclust(UScitiesD, method = "complete")
+
+par(mfrow = c(1, 3))
+plot(lnk)
+plot(agn, which.plots = 2)
+plot(hcl)
+```
+
+Converting to class dendrogram, we can see all three are structurally equivalent:
+
+```{r collapse = TRUE}
+lnk.dend <- as.dendrogram(lnk)
+agn.dend <- as.dendrogram(agn)
+hcl.dend <- as.dendrogram(hcl)
+identical(lnk.dend, agn.dend)
+
+par(mfrow = c(1, 2))
+plot(lnk.dend, main = "lnk.dend = agn.dend", cex = 0.7)
+plot(hcl.dend, main = "hcl.dend", cex = 0.7)
+```
+
+The cophenetic (ultrametric) matrix is readily available as component `coph` of the returned `linkage` object, and coincides with those obtained using the other functions:
+
+```{r collapse = TRUE}
+hcl.coph <- cophenetic(hcl)
+agn.coph <- cophenetic(agn)
+
+all(lnk$coph == hcl.coph)
+all(lnk$coph == agn.coph)
+```
+
+The coincidence also applies to the cophenetic correlation coefficient and agglomerative coefficient, with the advantage that `linkage` has them all already calculated:
+
+```{r collapse = TRUE}
+hcl.cor <- cor(UScitiesD, hcl.coph)
+all.equal(lnk$cor, hcl.cor)
+
+all.equal(lnk$ac, agn$ac)
+```
+
+
+
+## Rationale
+
+Package [**mdendro**](https://github.com/sergio-gomez/mdendro) was initially designed to make publicly available implementations of our work on agglomerative hierarchical clustering (AHC) [[@Fernandez2008; @Fernandez2020]](#bibliography), trying to reach a wide community through the use of the R language. We already have two implementations, a Java application called [MultiDendrograms](https://deim.urv.cat/~sergio.gomez/multidendrograms.php), and a `Hierarchical_Clustering` tool within our [Radatools](https://deim.urv.cat/~sergio.gomez/radatools.php) set of programs for the analysis of complex networks, whose Ada source code can be found in [Radalib](https://deim.urv.cat/~sergio.gomez/radalib.php).
+
+Apart from providing access to our algorithms, we also wanted to simplify how to use them, and improve the performance of their implementations. All this was accomplished by using state-of-the-art methods based on neighbor chains, implementing the base code in C++, and adding functionality to make the new package very similar and compatible with the main ones currently in use, namely the functions `hclust` in package [stats](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/00Index.html), and `agnes` in package [cluster](https://stat.ethz.ch/R-manual/R-devel/library/cluster/html/00Index.html). The result is a package [**mdendro**](https://github.com/sergio-gomez/mdendro) that includes and largely extends the functionality of these reference functions, thus with the option of being a replacement for them.
+
+The main novelties in [**mdendro**](https://github.com/sergio-gomez/mdendro), which are not available in other packages, are the following:
+
+- Calculation of variable-group **multidendrograms**, which solve the non-unicity problem of AHC when there are tied distances [[@Fernandez2008]](#bibliography).
+
+- Native handling of **similarity** matrices.
+
+- Explicit separation of **weighted** and **unweighted** methods of AHC.
+
+- Implementation of a new parametric family of methods: **versatile linkage** [[@Fernandez2020]](#bibliography).
+
+- Automatic calculation of the **cophenetic** (or **ultrametric**) matrix.
+
+- Automatic calculation of five **descriptors** of the final dendrogram: cophenetic correlation coefficient, space distortion ratio, agglomerative coefficient, chaining coefficient, and tree balance.
+
+- Plots of the descriptors for the parametric methods.
+
+
+
+### Multidendrograms
+
+#### Description
+
+**Multidendrograms** are the hierarchical structures that are obtained after applying the variable-group AHC algorithms introduced in [[@Fernandez2008]](#bibliography). They solve the _non-uniqueness problem_ found in the standard pair-group algorithms and implementations [[@Hart1983]](#bibliography). This problem arises when two or more minimum distances between different clusters are equal during the amalgamation process. The standard approach consists in choosing a pair, breaking the ties between distances, and proceeding in the same way until the final hierarchical classification is obtained. However, different clusterings are possible depending on the criterion used to break the ties (usually a pair is just chosen at random), and the user is unaware of this problem.
+
+The variable-group algorithms group more than two clusters at the same time when ties occur, given rise to a graphical representation called multidendrogram. Their main properties are:
+
+- When there are no ties, the variable-group algorithms give the same results as the pair-group ones.
+- They always give a uniquely-determined solution.
+- In the multidendrogram representation for the results, one can explicitly observe the occurrence of ties during the agglomerative process. Furthermore, the height of any fusion interval (the ranges or bands) indicates the degree of heterogeneity inside the corresponding cluster.
+
+Both `hclust` and `agnes` ignore this non-uniqueness problem, thus the need for [**mdendro**](https://github.com/sergio-gomez/mdendro).
+
+
+
+#### Example
+
+```{r echo = FALSE, warning = FALSE, results = "hide"}
+data <- "Name	VVMD5.1	VVMD5.2	VVMD7.1	VVMD7.2	VVMD27.1	VVMD27.2	VrZag62.1	VrZag62.2	VrZag79.1	VrZag79.2	VVS2-A1	VVS2.2
+Alfrocheiro	226	238	249	253	179	189	188	200	251	251	145	153
+Alvarinho	222	232	235	235	189	189	186	204	247	251	137	153
+Antão Vaz	234	236	245	259	181	183	204	204	247	247	147	153
+Aragonez	236	236	235	249	183	183	196	200	247	251	145	147
+Arinto	226	238	239	247	181	185	186	188	247	251	145	153
+Avesso	222	240	235	235	181	189	186	186	243	247	137	153
+Azal	226	232	235	243	181	185	194	204	247	251	153	159
+Baga	232	240	235	235	179	189	188	204	247	251	145	157
+Bastardo	238	238	235	253	175	189	188	188	245	247	145	153
+Bical	226	240	235	259	179	185	188	194	251	251	135	147
+Camarate	234	236	239	249	181	189	188	200	247	251	147	153
+Castelão	236	238	239	253	179	181	188	188	247	251	145	147
+Cerceal Branco	226	236	245	253	179	181	188	204	247	251	145	159
+Encruzado	226	232	235	253	183	189	194	194	247	251	151	153
+Espadeiro	222	226	243	259	183	189	196	204	251	251	135	153
+Fernão Pires	226	240	235	235	183	194	188	194	247	247	147	153
+Folgasão	232	240	239	243	185	189	194	204	245	251	135	153
+Galego Dourado	228	240	235	239	185	189	188	194	245	251	135	135
+Gouveio	226	238	235	239	185	189	186	188	251	251	153	159
+Jaen	226	236	245	253	181	189	188	194	247	251	147	153
+Loureiro	232	232	247	259	181	185	186	196	251	251	145	153
+Malvasia Fina	226	240	235	253	179	194	188	188	247	251	145	147
+Malvasia Rei	228	240	235	245	185	194	188	194	251	257	135	147
+Moreto	226	236	239	253	181	189	188	188	247	251	147	153
+Moscatel Graudo	228	232	245	247	179	194	186	204	247	255	135	151
+Moscatel Galego	226	228	235	245	179	189	186	188	251	255	135	153
+Negra Mole	222	240	235	235	181	181	188	196	247	259	145	159
+Perrum	236	240	235	239	181	185	188	188	243	247	135	147
+Rabo de Ovelha	222	236	235	239	181	181	188	194	247	247	139	153
+Rabigato	222	232	235	235	185	189	186	196	243	251	135	135
+Rufete	226	236	235	253	181	189	188	194	245	247	135	159
+Ramisco	226	238	235	259	181	185	188	196	247	251	135	159
+Sercial	226	238	235	249	181	185	188	194	247	259	135	153
+Síria	222	234	235	245	181	181	186	204	247	247	139	153
+Tália	226	232	245	249	179	183	194	200	245	251	135	145
+Terrantez	226	238	243	259	185	189	194	196	251	251	145	159
+Tinta Barroca	228	236	235	239	181	183	188	192	245	247	145	153
+Tinta Caiada	222	238	235	235	179	189	186	188	251	261	135	135
+Tinto Cão	232	234	235	259	181	185	186	194	247	251	135	135
+Tinta Miuda	226	238	235	235	179	183	186	188	251	259	141	153
+Touriga Franca	226	228	235	239	181	183	192	194	245	247	145	153
+Touriga Nacional	226	236	235	235	181	189	188	194	245	245	145	153
+Trajadura	226	236	235	247	181	185	186	186	247	247	145	153
+Trincadeira	234	238	235	245	181	185	188	204	247	251	135	153
+Trincadeira das Pratas	238	240	235	253	189	194	188	188	251	257	143	145
+Verdelho	222	232	235	253	181	189	194	196	247	251	135	153
+Viosinho	232	232	235	239	185	189	186	188	243	245	135	153
+Vinhão	222	226	235	259	189	189	188	196	245	251	135	137
+Vital	222	240	235	235	181	194	188	188	247	253	147	153
+Borraçal	232	238	235	235	181	185	194	194	247	247	135	137
+Fonte Cal	226	234	235	235	183	185	186	186	247	251	135	153"
+
+dt <- read.table(textConnection(data), header = TRUE, sep = "\t", dec = ".")
+# knitr::kable(dt)
+
+n <- nrow(dt)
+cols <- 2:ncol(dt)
+nc <- length(cols)
+
+m <- matrix(0.0, nrow = n, ncol = n,
+            dimnames = list(dt$Name, dt$Name))
+
+for (i in 1:(n-1)) {
+    for (j in (i+1):n) {
+        m[i, j] <- 1 - sum(dt[i, cols] == dt[j, cols]) / nc
+        m[j, i] <- m[i, j]
+    }
+}
+
+d <- as.dist(m)
+```
+
+Let us consider the genetic profiles of 51 grapevine cultivars at 6 microsatellite loci [[@Almadanim2007]](#bibliography). The distance between two cultivars is defined as one minus the fraction of shared alleles, that we use to calculate a distance matrix `d`. The main characteristic of this kind of data is that the number of different distances is very small:
+
+```{r collapse = TRUE}
+length(unique(d))
+```
+
+As a consequence, it becomes very easy to find tied distances during the agglomeration process. The corresponding unique _multidendrogram_ is the following:
+
+```{r}
+lnk <- linkage(d, method = "arithmetic", digits = 3)
+nodePar <- list(cex = 0, lab.cex = 0.6)
+plot(lnk, col.rng = NULL, nodePar = nodePar, main = "multidendrogram")
+```
+
+The reach of the non-uniqueness problem for this example is the existence of
+
+- 760,590,880 structurally different binary dendrograms
+
+This number corresponds to arithmetic linkage and a resolution of 3 decimal digits, and has been computed using the `Hierarchical_Clustering` tool in [Radatools](https://deim.urv.cat/~sergio.gomez/radatools.php). We can check this fact by just calculating the binary dendrogram for random permutations of the data, and plotting the broad range of values of their cophenetic correlations, which clearly indicate the existence of many structurally different dendrograms:
+
+```{r}
+nreps <- 1000
+cors <- vector(length = nreps)
+lnks <- list()
+for (r in 1:nreps) {
+    ord <- sample(attr(d, "Size"))
+    d2 <- as.dist(as.matrix(d)[ord, ord])
+    lnks[[r]] <- linkage(d2, group = "pair", digits = 3)
+    cors[r] <- lnks[[r]]$cor
+}
+plot(sort(cors), main = "pair-group cophenetic correlations (same data)")
+```
+
+For example, the first two pair-group dendrograms calculated above are structurally different:
+
+```{r}
+dend1 <- as.dendrogram(lnks[[1]])
+dend2 <- as.dendrogram(lnks[[2]])
+diff_12 <- dendextend::highlight_distinct_edges(dend1, dend2)
+diff_21 <- dendextend::highlight_distinct_edges(dend2, dend1)
+
+par(mfrow = c(2, 1))
+nodePar <- list(cex = 0, lab.cex = 0.6)
+plot(diff_12, nodePar = nodePar, main = "pair-group (original)")
+plot(diff_21, nodePar = nodePar, main = "pair-group (permuted)")
+```
+
+The identification of ties requires the selection of the number of significant digits in our data. For example, if the original distances are experimentally obtained with a resolution of three decimal digits, two distances that differ in the sixth decimal digit should be considered as equal. If this is not taken into account, ties may be broken just by the numerical imprecision inherent to computer representations of real numbers. In the `linkage` function, you can control this level of resolution by adjusting its `digits` argument.
+
+```{r}
+lnk3 <- linkage(d, method = "arithmetic", digits = 3)
+lnk1 <- linkage(d, method = "arithmetic", digits = 1)
+
+par(mfrow = c(2, 1))
+nodePar <- list(cex = 0, lab.cex = 0.6)
+plot(lnk3, col.rng = NULL, nodePar = nodePar,
+     main = "multidendrogram (digits = 3)")
+plot(lnk1, col.rng = NULL, nodePar = nodePar,
+     main = "multidendrogram (digits = 1)")
+```
+
+
+
+### Versatile linkage
+
+Package [**mdendro**](https://github.com/sergio-gomez/mdendro) also introduces a new family of _space-conserving_ hierarchical clustering methods called **versatile linkage** [[@Fernandez2020]](#bibliography). It is based on the use of [_generalized means_](https://en.wikipedia.org/wiki/Generalized_mean), and includes single linkage, complete linkage and arithmetic linkage (a.k.a. average linkage or UPGMA/WPGMA) as particular cases. Additionally, versatile linkage naturally leads to the definition of two new methods, geometric linkage and harmonic linkage (hence the convenience to rename average linkage as arithmetic linkage, to emphasize the existence of different types of averages).
+
+In function `linkage`, the parameter of versatile linkage is introduced using the `par.method` argument. It can take any real value, and the correspondence between versatile linkage and the above mentioned methods is the following:
+
+```{r echo = FALSE}
+vl_tab <- data.frame(
+  linkage = c("complete", "arithmetic", "geometric", "harmonic", "single"),
+  par.method = c(+Inf, +1, 0, -1, -Inf)
+)
+knitr::kable(vl_tab, col.names = c("linkage", "versatile linkage (`par.method`)"))
+```
+
+Let us show a small example in which we plot the different (multi)dendrograms as we increase the versatile linkage parameter, indicating the corresponding _named_ methods:
+
+```{r}
+d = as.dist(matrix(c( 0,  7, 16, 12,
+                      7,  0,  9, 19,
+                     16,  9,  0, 12,
+                     12, 19, 12, 0), nrow = 4))
+
+par(mfrow = c(2, 3))
+
+vals <- c(-Inf, -1, 0, 1, Inf)
+names <- c("single", "harmonic", "geometric", "arithmetic", "complete")
+titles <- sprintf("versatile (%.1f) = %s", vals, names)
+
+for (i in 1:length(vals)) {
+  lnk <- linkage(d, method = "versatile", par.method = vals[i], digits = 2)
+  plot(lnk, ylim = c(0, 20), cex = 0.6, main = titles[i])
+}
+```
+
+
+
+## Reference manual
+
+### Usage
+
+```{r eval = FALSE}
+linkage(prox, type.prox = "distance", digits = NULL,
+        method = "arithmetic", par.method = 0, weighted = FALSE,
+        group = "variable")
+
+descplot(prox, ..., type.prox = "distance", digits = NULL,
+         method = "versatile", par.method = c(-1, 0, +1), weighted = FALSE,
+         group = "variable", measure = "cor", slope = 10)
+```
+
+Arguments:
+
+```{r echo = FALSE}
+arguments <- data.frame(
+  arg = c("`prox`",
+          "`type.prox`",
+          "`digits`",
+          "`method`",
+          "`par.method`",
+          "`weighted`",
+          "`group`",
+          "`measure`",
+          "`slope`",
+          "`...`"),
+  desc = c("A structure of class `dist` containing proximity data (distances or similarities). Similarity data must be between 0 and 1."
+           ,
+            "A character string to indicate whether the proximity data represent `\"distance\"` (default) or `\"similarity\"` between objects."
+           ,
+            "An integer value specifying the precision, i.e., the number of significant decimal digits to be used for the comparisons between proximity data. This is an important parameter, since equal proximity data at a certain precision may become different by increasing its value. Thus, it may be responsible of the existence of tied proximity data. If the value of this parameter is negative or `NULL` (default), then the precision is automatically set to that of the input proximity value with the largest number of significant decimal digits."
+           ,
+            "A character string specifying the linkage method to be used. For `linkage()`, this should be one of: `\"single\"`, `\"complete\"`, `\"arithmetic\"`, `\"geometric\"`, `\"harmonic\"`, `\"versatile\"`, `\"ward\"`, `\"centroid\"` or `\"flexible\"`. Methods `\"ward\"` and `\"centroid\"` cannot be used with similarity data. Methods `\"versatile\"` and `\"flexible\"` are the only two methods that can be used in `descplot()`."
+           ,
+            "A real value, in the case of `linkage()`, or a vector of real values, in the case of `descplot()`, required as parameter for the methods `\"versatile\"` and `\"flexible\"`. The range of possible values is [-Inf, +Inf] for `\"versatile\"`, and [-1, +1] for `\"flexible\"`."
+           ,
+            "A logical value to choose between the weighted and the unweighted (default) versions of some linkage methods. Weighted linkage gives merging branches in a dendrogram equal weight regardless of the number of objects carried on each branch. Such a procedure weights objects unequally, contrasting with unweighted linkage that gives equal weight to each object in the clusters. This parameter has no effect on the `\"single\"` and `\"complete\"` linkages."
+           ,
+            "A character string to choose a grouping criterion between the `\"variable\"`-group approach (default) that returns a multidendrogram, i.e., a multifurcated dendrogram (m-ary tree), and the `\"pair\"`-group approach that returns a bifurcated dendrogram (binary tree)."
+           ,
+            "A character string specifying the descriptive measure to be plotted. This should be one of: `\"cor\"`, for cophenetic correlation coefficient; `\"sdr\"`, for space distortion ratio; `\"ac\"`, for agglomerative coefficient; `\"cc\"`, for chaining coefficient; or `\"tb\"`, for tree balance."
+           ,
+            "A real value representing the slope of a sigmoid function to map the `\"versatile\"` linkage unbounded interval (-Inf, +Inf) onto the bounded interval (-1, +1). It can be used to improve the distribution of points along the x axis."
+           ,
+            "Graphical parameters may also be supplied (see `par`) and are passed to `plot.default`."
+            )
+)
+knitr::kable(arguments, col.names = c("", ""))
+```
+
+
+```{r eval = FALSE}
+## S3 method for class 'linkage'
+plot(x, type = c("rectangle", "triangle"),
+     center = FALSE, edge.root = FALSE,
+     nodePar = NULL, edgePar = list(),
+     leaflab = c("perpendicular", "textlike", "none"),
+     dLeaf = NULL, xlab = "", ylab = "", xaxt = "n", yaxt = "s",
+     horiz = FALSE, frame.plot = FALSE, xlim, ylim,
+     col.rng = "lightgray", ...)
+```
+
+Arguments:
+
+```{r echo = FALSE}
+arguments <- data.frame(
+  arg = c("`x`",
+          "`type`",
+          "`center`",
+          "`edge.root`",
+          "`nodePar`",
+          "`edgePar`",
+          "`leaflab`",
+          "`dLeaf`",
+          "`xlab`,`ylab`",
+          "`xaxt`,`yaxt`",
+          "`horiz`",
+          "`frame.plot`",
+          "`xlim`,`ylim`",
+          "`col.rng`",
+          "`...`"),
+  desc = c("An object of class `linkage`, typically created by `linkage()`."
+           ,
+            "Type of plot"
+           ,
+            "Logical; if `TRUE`, nodes are plotted centered with respect to the leaves in the branch. Otherwise (default), plot them in the middle of all direct child nodes."
+           ,
+            "Logical; if `TRUE`, draw an edge to the root node."
+           ,
+            "A `list` of plotting parameters to use for the nodes (see `points`), or `NULL` by default which does not draw symbols at the nodes. The list may contain components named `pch`, `cex`, `col`, `xpd`, and/or `bg` each of which can have length two for specifying separate attributes for inner nodes and leaves. Note that the default of `pch` is `1:2`, so you may want to use `pch = NA` if you specify `nodePar`."
+           ,
+            "A `list` of plotting parameters to use for the edge `segments`. The list may contain components named `co`l, `lty` and `lwd`. As with `nodePar`, each can have length two for differentiating leaves and inner nodes."
+           ,
+            "A string specifying how leaves are labeled. The default `\"perpendicular\"` writes text vertically (by default), `\"textlike\"` writes text horizontally (in a rectangle), and `\"none\"` suppresses leaf labels."
+           ,
+            "A number specifying the distance in user coordinates between the tip of a leaf and its label. If `NULL` as per default, 3/4 of a letter width or height is used."
+           ,
+            "A label for the axis."
+           ,
+            "A character which specifies the axis type. Specifying `\"n\"` suppresses plotting, while any value other than `\"n\"` implies plotting."
+           ,
+            "Logical indicating if the dendrogram should be drawn horizontally or not."
+           ,
+            "Logical indicating if a box around the plot should be drawn, see `plot.default`."
+           ,
+            "Optional x- and y-limits of the plot, passed to `plot.default`. The defaults for these show the full dendrogram."
+           ,
+            "Color (`\"lightgray\"` by default) to be used for plotting range rectangles in case of tied heights. If `NULL`, range rectangles are not plotted."
+           ,
+            "Graphical parameters (see `par`) may also be supplied and are passed to `plot.default`."
+            )
+)
+knitr::kable(arguments, col.names = c("", ""))
+```
+
+Based on the plot function for objects of class `dendrogram` (see `plot.dendrogram`), the `plot` function for objects of class `linkage` adds the possibility of visualizing the existence of tied heights in a dendrogram thanks to the `col.rng` parameter.
+
+
+### Results
+
+An object of class `linkage` that describes the multifurcated dendrogram obtained. The object is a list with the following components:
+
+```{r echo = FALSE}
+components <- data.frame(
+  val = c("`call`",
+          "`digits`",
+          "`merger`",
+          "`height`",
+          "`range`",
+          "`order`",
+          "`coph`",
+          "`cor`",
+          "`sdr`",
+          "`ac`",
+          "`cc`",
+          "`tb`"),
+  desc = c("The call that produced the result."
+           ,
+            "Number of significant decimal digits used as precision. It is given by the user or automatically set to that of the input proximity value with the largest number of significant decimal digits."
+           ,
+            "A list of vectors of integer that describes the merging of clusters at each step of the clustering. If a number _j_ in a vector is negative, then singleton cluster _-j_ was merged at this stage. If _j_ is positive, then the merge was with the cluster formed at stage _j_ of the algorithm."
+           ,
+            "A vector with the proximity values between merging clusters (for the particular agglomeration) at the successive stages."
+           ,
+            "A vector with the range (the maximum minus the minimum) of proximity values between merging clusters. It is equal to 0 for binary clusters."
+           ,
+            "A vector giving a permutation of the original observations to allow for plotting, in the sense that the branches of a clustering tree will not cross."
+           ,
+            "Object of class `dist` containing the cophenetic (or ultrametric) proximity data in the output dendrogram, sorted in the same order as the input proximity data in `prox`."
+           ,
+            "Cophenetic correlation coefficient [[@Sokal1962]](#bibliography), defined as the Pearson correlation coefficient between the output cophenetic proximity data and the input proximity data. It is a measure of how faithfully the dendrogram preserves the pairwise proximity between objects."
+           ,
+            "Space distortion ratio [[@Fernandez2020]](#bibliography), calculated as the difference between the maximum and minimum cophenetic proximity data, divided by the difference between the maximum and minimum initial proximity data. Space dilation occurs when the space distortion ratio is greater than 1."
+           ,
+            "Agglomerative coefficient [[@Rousseeuw1986]](#bibliography), a number between 0 and 1 measuring the strength of the clustering structure obtained."
+           ,
+            "Chaining coefficient [[@Williams1966]](#bibliography), a number between 0 and 1 measuring the tendency for clusters to grow by the addition of clusters much smaller rather than by fusion with other clusters of comparable size."
+           ,
+            "Tree balance [[@Fernandez2020]](#bibliography), a number between 0 and 1 measuring the equality in the number of leaves in the branches concerned at each fusion in the hierarchical tree."
+            )
+)
+knitr::kable(components, col.names = c("", ""))
+```
+
+Class `linkage` has methods for the following generic functions: `summary`, `plot` (see `plot.linkage`), `as.dendrogram`, `as.hclust` and `cophenetic`.
+
+
+
+### Supported linkage methods
+
+The difference between the available hierarchical clustering methods rests in the way the proximity between two clusters is defined from the proximity between their constituent objects:
+
+- `"single"`: the proximity between clusters equals the minimum distance or the maximum similarity between objects.
+
+- `"complete"`: the proximity between clusters equals the maximum distance or the minimum similarity between objects.
+
+- `"arithmetic"`: the proximity between clusters equals the arithmetic mean proximity between objects. Also known as average linkage, WPGMA (weighted version) or UPGMA (unweighted version).
+
+- `"geometric"`: the proximity between clusters equals the geometric mean proximity between objects.
+
+- `"harmonic"`: the proximity between clusters equals the harmonic mean proximity between objects.
+
+- `"versatile"`: the proximity between clusters equals the generalized power mean proximity between objects. It depends on the value of par.method, with the following linkage methods as particular cases: `"complete"` (`par.method = +Inf`), `"arithmetic"` (`par.method = +1`), `"geometric"` (`par.method = 0`), `"harmonic"` (`par.method = -1`) and `"single"` (`par.method = -Inf`).
+
+- `"ward"`: the distance between clusters is a weighted squared Euclidean distance between the centroids of each cluster. This method is available only for distance data.
+
+- `"centroid"`: the distance between clusters equals the square of the Euclidean distance between the centroids of each cluster. Also known as WPGMC (weighted version) or UPGMC (unweighted version). This method is available only for distance data.
+
+- `"flexible"`: the proximity between clusters is a weighted sum of the proximity between clusters in the previous iteration. It depends on the value of `par.method`, in the range [-1, +1], and it is equivalent to `"arithmetic"` linkage when `par.method = 0`.
+
+
+
+### Equivalences with other packages
+
+Except for the cases containing tied distances, the following equivalences hold between function `linkage` in package _mdendro_, function `hclust` in package _stats_, and function `agnes` in package _cluster_. When relevant, weighted (W) or unweighted (U) versions of the linkage methods and the value for `par.method` are indicated:
+
+```{r echo = FALSE}
+methods <- data.frame(
+  linkage   = c("single", "complete", "arithmetic, U", "arithmetic, W",
+                "geometric, U/W", "harmonic, U/W", "versatile, U/W, $p$",
+                "---", "ward", "centroid, U", "centroid, W",
+                "flexible, U, $\\beta$", "---",
+                "flexible, W, $\\beta$", "---"),
+  hclust    = c("single", "complete", "average", "mcquitty",
+                "---", "---", "---", "ward", "ward.D2",
+                "centroid", "median", "---", "---", "---", "---"),
+  agnes     = c("single", "complete", "average", "weighted",
+                "---", "---", "---", "---", "ward",
+                "---", "---",
+                "gaverage, $\\beta$",
+                "gaverage, $\\alpha_1$, $\\alpha_2$, $\\beta$, $\\gamma$",
+                "flexible, $(1-\\beta)/2$",
+                "flexible, $\\alpha_1$, $\\alpha_2$, $\\beta$, $\\gamma$")
+)
+knitr::kable(methods, col.names = c("`linkage`", "`hclust`", "`agnes`"))
+```
+
+
+
+## History
+
+#### _mdendro 2.0_
+
+Fully new implementation from scratch, programmed in C++, using the efficient technique of neighbor chains, including plotting capabilities, and compatible with the main hierarchical clustering and dendrogram packages in R.
+
+
+#### _mdendro 1.0_
+
+Initial R version based on the [MultiDendrograms](https://deim.urv.cat/~sergio.gomez/multidendrograms.php) Java core for the calculations.
+
+
+
+## Authors
+
+- **Alberto Fernández**: Dept. Enginyeria Química, Universitat Rovira i Virgili, Tarragona (Spain). ([email](mailto:alberto.fernandez@urv.cat?subject=[mdendro])) ([ORCID](https://orcid.org/0000-0002-1241-1646)) ([Google Scholar](https://scholar.google.es/citations?user=AbH4r0IAAAAJ)) ([GitHub](https://github.com/albyfs))
+
+- **Sergio Gómez**: Dept. Enginyeria Informàtica i Matemàtiques, Universitat Rovira i Virgili, Tarragona (Spain). ([web](https://deim.urv.cat/~sergio.gomez/)) ([email](mailto:sergio.gomez@urv.cat?subject=[mdendro])) ([ORCID](http://orcid.org/0000-0003-1820-0062)) ([Google Scholar](https://scholar.google.es/citations?user=ETrjkSIAAAAJ)) ([GitHub](https://github.com/sergio-gomez)) ([Twitter](https://twitter.com/SergioGomezJ))
+
+
+## Bibliography
