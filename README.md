@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4850373.svg)](https://doi.org/10.5281/zenodo.4850373)
+
 # mdendro
 Extended Agglomerative Hierarchical Clustering in R
 
