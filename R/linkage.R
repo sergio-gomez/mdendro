@@ -19,21 +19,15 @@ linkage <- function(prox, type.prox = "distance", digits = NULL,
   }
   storage.mode(prox) <- "double"
   type.prox <- match.arg(type.prox, TYPES.PROX)
-  if ((type.prox == "distance") && (min(prox) < 0)) {
-    stop("Distance data must be non-negative")
-  } else if ((type.prox == "similarity") && ((min(prox) < 0)
-      || (1 < max(prox)))) {
-    stop("Similarity data must be between 0 and 1")
+  if (min(prox) < 0) {
+    stop("Data must be non-negative")
+  } else if (max(prox) == Inf) {
+    stop("Data must be less than Inf")
   }
   if (is.null(digits)) {
     digits <- -1L
   }
   method <- match.arg(method, METHODS)
-  if (((method == "geometric") || (method == "harmonic")
-      || ((method == "versatile") && (par.method <= 0))) && (min(prox) < 0)) {
-    stop(paste("'versatile' with negative parameter, 'geometric' and",
-        " 'harmonic' cannot be used with negative data", sep=""))
-  }
   if (((method == "ward") || (method == "centroid"))
       && (type.prox == "similarity")) {
     stop("'ward' and 'centroid' cannot be used with similarity data")
@@ -43,9 +37,11 @@ linkage <- function(prox, type.prox = "distance", digits = NULL,
   }
   group <- match.arg(group, GROUPS)
   # Build agglomerative hierarchical clustering
-  lnk <- rcppLinkage(prox=prox, isDistance=(type.prox == "distance"),
-      digits=digits, method=method, methodPar=par.method,
-      isWeighted=as.logical(weighted), isVariable=(group == "variable"))
+  lnk <- rcppLinkage(prox=as.numeric(prox),
+      isDistance=as.logical(type.prox == "distance"), digits=as.integer(digits),
+      method=as.character(method), methodPar=as.numeric(par.method),
+      isWeighted=as.logical(weighted),
+      isVariable=as.logical(group == "variable"))
   # Permute the original observations
   ord <- integer(attr(prox, "Size"))
   jOrd <- 0L
@@ -82,6 +78,7 @@ linkage <- function(prox, type.prox = "distance", digits = NULL,
       range = lnk$range,
 	  order = ord,
       coph = lnk$coph,
+	  binary = as.logical(length(lnk$height) == (attr(prox, "Size") - 1L)),
       cor = lnk$cor,
       sdr = lnk$sdr,
       ac = lnk$ac,
@@ -116,6 +113,7 @@ descplot <- function(prox, ..., type.prox = "distance", digits = NULL,
 
 summary.linkage <- function(object, ...) {
   # Print call
+  cat("Call:\n", sep="")
   cl <- object$call
   cat(deparse(cl[[1L]]), "(prox = ", deparse(cl$prox), ",\n", sep="")
   type.prox <- match.arg(cl$type.prox, TYPES.PROX)
@@ -133,7 +131,10 @@ summary.linkage <- function(object, ...) {
   }
   group <- match.arg(cl$group, GROUPS)
   cat("        group = \"", group, "\")\n\n", sep="")
+  # Print binary
+  cat("Binary dendrogram: ", object$binary, "\n\n", sep="")
   # Print measures
+  cat("Descriptive measures:\n", sep="")
   print(c(cor = object$cor, sdr = object$sdr, ac = object$ac, cc = object$cc,
       tb = object$tb), ...)
   invisible(object)
@@ -185,8 +186,7 @@ as.dendrogram.linkage <- function(object, ...) {
     size <- attr(object$coph, "Size")
     labels <- as.character(seq_len(size))
   }
-  type.prox <- match.arg(object$call$type.prox, TYPES.PROX)
-  hBottom <- if (type.prox == "distance") 0 else 1
+  hBottom <- .hgtBottom(object)
   z <- list()
   nMergers <- length(object$height)
   ties <- rep.int(0L, times=nMergers)  # number of ties before each merger
@@ -264,8 +264,7 @@ as.multidendrogram <- function(object) {
     size <- attr(object$coph, "Size")
     labels <- as.character(seq_len(size))
   }
-  type.prox <- match.arg(object$call$type.prox, TYPES.PROX)
-  hBottom <- if (type.prox == "distance") 0 else 1
+  hBottom <- .hgtBottom(object)
   z <- list()
   nMergers <- length(object$height)
   for (k in 1L : nMergers) {
@@ -321,12 +320,12 @@ plot.linkage <- function (x, type = c("rectangle", "triangle"), center = FALSE,
   }
   leaflab <- match.arg(leaflab)
   hgt <- attr(xd, "height")
-  type.prox <- match.arg(x$call$type.prox, TYPES.PROX)
-  yBot <- if (type.prox == "distance") 0 else 1
+  yBot <- .hgtBottom(x)
   if (edge.root && is.logical(edge.root)) {
     edge.root <- 0.0625 * (if (stats::is.leaf(xd)) 1 else abs(hgt - yBot))
   }
   mem.xd <- .memberDend(xd)
+  type.prox <- match.arg(x$call$type.prox, TYPES.PROX)
   yTop <- if (type.prox == "distance") hgt + edge.root else hgt - edge.root
   hgtTop <- .hgtDend(xd, type.prox=type.prox, col.rng=col.rng)
   if (center) {
@@ -415,6 +414,11 @@ plot.linkage <- function (x, type = c("rectangle", "triangle"), center = FALSE,
     }
   }
   hgt
+}
+
+.hgtBottom <- function(x) {
+  type.prox <- match.arg(x$call$type.prox, TYPES.PROX)
+  if (type.prox == "distance") 0 else 10^(ceiling(log10(max(x$coph))))
 }
 
 ### the work horse: plot node (if pch) and lines to all children

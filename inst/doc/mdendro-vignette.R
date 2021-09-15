@@ -427,6 +427,7 @@ components <- data.frame(
           "`range`",
           "`order`",
           "`coph`",
+          "`binary`",
           "`cor`",
           "`sdr`",
           "`ac`",
@@ -445,6 +446,8 @@ components <- data.frame(
             "A vector giving a permutation of the original observations to allow for plotting, in the sense that the branches of a clustering tree will not cross."
            ,
             "Object of class `dist` containing the cophenetic (or ultrametric) proximity data in the output dendrogram, sorted in the same order as the input proximity data in `prox`."
+           ,
+            "A logical value indicating whether the output dendrogram is a binary tree or, on the contrary, it contains an agglomeration of more than two clusters due to the existence of tied proximity data. Its value is always `TRUE` when the `pair` grouping criterion is used."
            ,
             "Cophenetic correlation coefficient [[@Sokal1962]](#bibliography), defined as the Pearson correlation coefficient between the output cophenetic proximity data and the input proximity data. It is a measure of how faithfully the dendrogram preserves the pairwise proximity between objects."
            ,

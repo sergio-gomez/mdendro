@@ -18,8 +18,8 @@ descplot(prox, ..., type.prox = "distance", digits = NULL,
          group = "variable", measure = "cor", slope = 10)
 }
 \arguments{
-  \item{prox}{A structure of class \code{"dist"} containing proximity
-    data (distances or similarities). Similarity data must be between 0 and 1.}
+  \item{prox}{A structure of class \code{"dist"} containing non-negative
+    proximity data (distances or similarities).}
   \item{type.prox}{A character string to indicate whether the proximity data
     represent \code{"distance"} (default) or \code{"similarity"} between
     objects.}
@@ -152,6 +152,10 @@ descplot(prox, ..., type.prox = "distance", digits = NULL,
   \item{coph}{Object of class \code{"dist"} containing the cophenetic
     (or ultrametric) proximity data in the output dendrogram, sorted in the same
     order as the input proximity data in \code{prox}.}
+  \item{binary}{A logical value indicating whether the output dendrogram is a
+    binary tree or, on the contrary, it contains an agglomeration of more than
+    two clusters due to the existence of tied proximity data. Its value is
+    always \code{TRUE} when the \code{"pair"} grouping criterion is used.}
   \item{cor}{Cophenetic correlation coefficient (Sokal and Rohlf, 1962),
     defined as the Pearson correlation coefficient between the output cophenetic
     proximity data and the input proximity data. It is a measure of how
@@ -179,9 +183,9 @@ descplot(prox, ..., type.prox = "distance", digits = NULL,
 }
 \note{
   Except for the cases containing tied proximity data, the following
-  equivalences hold between function \code{linkage()} in this package, function
-  \code{\link{hclust}()} in package \CRANpkg{stats}, and function
-  \code{\link{agnes}()} in package \CRANpkg{cluster}. When relevant, weighted
+  equivalences hold between function \code{linkage()} in package \emph{mdendro},
+  function \code{\link{hclust}()} in package \emph{stats}, and function
+  \code{\link{agnes}()} in package \emph{cluster}. When relevant, weighted
   (\code{W}) or unweighted (\code{U}) versions of the linkage methods and the
   value for \code{par.method} (\eqn{\beta}) are indicated:
   \tabular{lll}{

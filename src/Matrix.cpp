@@ -8,42 +8,37 @@
 
 mdendro::Matrix::Matrix() {
   this->nrows = 0;
-  this->diagvalue = NOT_A_NUMBER;
   this->minvalue = +INF;
   this->maxvalue = -INF;
 }
 
 mdendro::Matrix::Matrix(const Matrix& other) {
   this->nrows = other.nrows;
-  this->diagvalue = other.diagvalue;
-  this->trivalues = other.trivalues;
+  this->values = other.values;
   this->minvalue = +INF;
   this->maxvalue = -INF;
-  for (int i = 0; i < (int)trivalues.size(); i ++) {
-    this->minvalue = std::min(this->minvalue, this->trivalues[i]);
-    this->maxvalue = std::max(this->maxvalue, this->trivalues[i]);
+  for (int i = 0; i < (int)values.size(); i ++) {
+    this->minvalue = std::min(this->minvalue, this->values[i]);
+    this->maxvalue = std::max(this->maxvalue, this->values[i]);
   }
 }
 
-mdendro::Matrix::Matrix(double diagvalue,
-    const std::vector<double>& trivalues) {
-  int nvalues = (int)trivalues.size();
+mdendro::Matrix::Matrix(const std::vector<double>& values) {
+  int nvalues = (int)values.size();
   this->nrows = (1 + (int)std::round(std::sqrt((double)(1 + 8 * nvalues)))) / 2;
-  this->diagvalue = diagvalue;
-  this->trivalues = trivalues;
+  this->values = values;
   this->minvalue = +INF;
   this->maxvalue = -INF;
-  for (int i = 0; i < (int)trivalues.size(); i ++) {
-    this->minvalue = std::min(this->minvalue, this->trivalues[i]);
-    this->maxvalue = std::max(this->maxvalue, this->trivalues[i]);
+  for (int i = 0; i < (int)values.size(); i ++) {
+    this->minvalue = std::min(this->minvalue, this->values[i]);
+    this->maxvalue = std::max(this->maxvalue, this->values[i]);
   }
 }
 
-mdendro::Matrix::Matrix(int nrows, double diagvalue) {
+mdendro::Matrix::Matrix(int nrows) {
   this->nrows = nrows;
-  this->diagvalue = diagvalue;
   int nvalues = (nrows - 1) * nrows / 2;
-  this->trivalues = std::vector<double>(nvalues, NOT_A_NUMBER);
+  this->values = std::vector<double>(nvalues, NOT_A_NUMBER);
   this->minvalue = +INF;
   this->maxvalue = -INF;
 }
@@ -52,29 +47,25 @@ int mdendro::Matrix::rows() const {
   return this->nrows;
 }
 
-double mdendro::Matrix::getDiagonalValue() const {
-  return this->diagvalue;
-}
-
-std::vector<double> mdendro::Matrix::getTriangularValues() const {
-  return this->trivalues;
+std::vector<double> mdendro::Matrix::getValues() const {
+  return this->values;
 }
 
 double mdendro::Matrix::getValue(int i, int j) const {
   double value;
   if (i == j) {
-    value = this->diagvalue;
+    value = NOT_A_NUMBER;
   } else {
-    value = this->trivalues[index(i, j)];
+    value = this->values[index(i, j)];
   }
   return value;
 }
 
-void mdendro::Matrix::setTriangularValue(int i, int j, double trivalue) {
+void mdendro::Matrix::setValue(int i, int j, double value) {
   if (i != j) {
-    this->trivalues[index(i, j)] = trivalue;
-    this->minvalue = std::min(this->minvalue, trivalue);
-    this->maxvalue = std::max(this->maxvalue, trivalue);
+    this->values[index(i, j)] = value;
+    this->minvalue = std::min(this->minvalue, value);
+    this->maxvalue = std::max(this->maxvalue, value);
   }
 }
 
@@ -90,9 +81,9 @@ int mdendro::Matrix::getPrecision() const {
   std::ostringstream oss;
   oss.precision(MAX_DIGITS);  // Modify the default precision
   int maxdecimals = 0;
-  for (int i = 0; i < (int)trivalues.size(); i ++) {
+  for (int i = 0; i < (int)values.size(); i ++) {
     oss.str("");  // Clear string stream
-    oss << this->trivalues[i];
+    oss << this->values[i];
     std::string s = oss.str();
     std::size_t found = s.find('.');
     int decimals = (found == std::string::npos)? 0 : (int)(s.size()-found)-1;

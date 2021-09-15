@@ -5,6 +5,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // rcppLinkage
 Rcpp::List rcppLinkage(const Rcpp::NumericVector& prox, bool isDistance, int digits, std::string method, double methodPar, bool isWeighted, bool isVariable);
 RcppExport SEXP _mdendro_rcppLinkage(SEXP proxSEXP, SEXP isDistanceSEXP, SEXP digitsSEXP, SEXP methodSEXP, SEXP methodParSEXP, SEXP isWeightedSEXP, SEXP isVariableSEXP) {

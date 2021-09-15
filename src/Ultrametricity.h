@@ -13,7 +13,7 @@ namespace mdendro {
   public:
     Ultrametricity();
     Ultrametricity(const Matrix& iniProx, const std::vector<Merger>& mergers,
-        bool isDistance);
+        double bottomHgt);
     Matrix getCopheneticProximity() const;
     double getCopheneticCorrCoeff() const;
     double getSpaceDistortion() const;
@@ -28,13 +28,12 @@ namespace mdendro {
     double agglomerative;  // Agglomerative Coefficient
     double chaining;  // Chaining Coefficient
     double balance;  // Tree Balance
-    void calcCopheneticProximity(const std::vector<Merger>& mergers,
-        bool isDistance);
+    void calcCopheneticProximity(const std::vector<Merger>& mergers);
     void groupPair(const std::list<int>& sci, const std::list<int>& scj,
         double prox);
     void calcCopheneticMeasures(const Matrix& iniProx);
     void calcAgglomerativeMeasures(const std::vector<Merger>& mergers,
-        bool isDistance);
+        double bottomHgt);
     double entropy(const std::list<int>& clusters, int sMembers,
         const std::vector<int>& nMembers) const;
   };

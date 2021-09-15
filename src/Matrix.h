@@ -15,20 +15,18 @@ namespace mdendro {
   public:
     Matrix();
     Matrix(const Matrix& other);
-    Matrix(double diagvalue, const std::vector<double>& trivalues);
-    Matrix(int nrows, double diagvalue);
+    Matrix(const std::vector<double>& values);
+    Matrix(int nrows);
     int rows() const;
-    double getDiagonalValue() const;
-	std::vector<double> getTriangularValues() const;
+	std::vector<double> getValues() const;
     double getValue(int i, int j) const;
-    void setTriangularValue(int i, int j, double trivalue);
+    void setValue(int i, int j, double value);
     double getMinimumValue() const;
     double getMaximumValue() const;
     int getPrecision() const;
   private:
     int nrows;  // Number of rows
-    double diagvalue;  // Diagonal value
-    std::vector<double> trivalues;  // Lower triangular values by columns
+    std::vector<double> values;  // Lower triangular values by columns
     double minvalue;  // Lower triangular minimum value
     double maxvalue;  // Lower triangular maximum value
     int index(int i, int j) const;

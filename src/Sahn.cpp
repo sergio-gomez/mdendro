@@ -303,7 +303,7 @@ void mdendro::Sahn::updateProximity(const std::list<int>& inext,
       int jj = *itj;
       std::list<int> nnj = nearestNeighbors(connected, jj);
       double pij = newProximity(nni, nnj);
-      this->proximity.setTriangularValue(ii, jj, pij);
+      this->proximity.setValue(ii, jj, pij);
       itj ++;
     }
     int k = this->firstAgglomerable;
@@ -311,7 +311,7 @@ void mdendro::Sahn::updateProximity(const std::list<int>& inext,
       if (!connected[k]) {
         std::list<int> nnk = nearestNeighbors(connected, k);
         double pik = newProximity(nni, nnk);
-        this->proximity.setTriangularValue(ii, k, pik);
+        this->proximity.setValue(ii, k, pik);
         if (k < ii) {
           // Ensure that correct nearest neighbours are found when
           // non-monotone (e.g. centroid) methods are used

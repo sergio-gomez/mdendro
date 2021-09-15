@@ -18,11 +18,11 @@ mdendro::Ultrametricity::Ultrametricity() {
 }
 
 mdendro::Ultrametricity::Ultrametricity(const Matrix& iniProx,
-	const std::vector<Merger>& mergers, bool isDistance) {
+	const std::vector<Merger>& mergers, double bottomHgt) {
   this->nObjects = iniProx.rows();
-  calcCopheneticProximity(mergers, isDistance);
+  calcCopheneticProximity(mergers);
   calcCopheneticMeasures(iniProx);
-  calcAgglomerativeMeasures(mergers, isDistance);
+  calcAgglomerativeMeasures(mergers, bottomHgt);
 }
 
 mdendro::Matrix mdendro::Ultrametricity::getCopheneticProximity() const {
@@ -50,9 +50,8 @@ double mdendro::Ultrametricity::getTreeBalance() const {
 }
 
 void mdendro::Ultrametricity::calcCopheneticProximity(
-    const std::vector<Merger>& mergers, bool isDistance) {
-  double selfProx = isDistance? 0.0 : 1.0;
-  this->cophProx = Matrix(this->nObjects, selfProx);
+    const std::vector<Merger>& mergers) {
+  this->cophProx = Matrix(this->nObjects);
   std::vector< std::list<int> > members(this->nObjects);
   for (int i = 0; i < (int)members.size(); i ++) {
     members[i].push_back(i);
@@ -92,7 +91,7 @@ void mdendro::Ultrametricity::groupPair(const std::list<int>& sci,
     std::list<int>::const_iterator itj = scj.begin();
     while (itj != scj.end()) {
       int j = *itj;
-      this->cophProx.setTriangularValue(i, j, prox);
+      this->cophProx.setValue(i, j, prox);
       itj ++;
     }
     iti ++;
@@ -140,9 +139,8 @@ void mdendro::Ultrametricity::calcCopheneticMeasures(const Matrix& iniProx) {
 }
 
 void mdendro::Ultrametricity::calcAgglomerativeMeasures(
-    const std::vector<Merger>& mergers, bool isDistance) {
-  double bottomHeight = isDistance? 0.0 : 1.0;
-  double sumHeights = 0.0;
+    const std::vector<Merger>& mergers, double bottomHgt) {
+  double sumHgts = 0.0;
   int diffMembers = 0;
   this->balance = 0.0;
   std::vector<int> nMembers(this->nObjects, 1);
@@ -155,7 +153,7 @@ void mdendro::Ultrametricity::calcAgglomerativeMeasures(
     while (it != clusters.end()) {
       int i = *it;
       if (nMembers[i] == 1) {
-        sumHeights += mergers[k].getHeight() - bottomHeight;
+        sumHgts += mergers[k].getHeight() - bottomHgt;
       }
       maxMembers = std::max(maxMembers, nMembers[i]);
       minMembers = std::min(minMembers, nMembers[i]);
@@ -166,8 +164,8 @@ void mdendro::Ultrametricity::calcAgglomerativeMeasures(
     this->balance += entropy(clusters, sumMembers, nMembers);
     nMembers[clusters.front()] = sumMembers;
   }
-  double topHeight = mergers.back().getHeight() - bottomHeight;
-  this->agglomerative = 1.0 - sumHeights / ((double)this->nObjects * topHeight);
+  double topHgt = mergers.back().getHeight() - bottomHgt;
+  this->agglomerative = 1.0 - sumHgts / ((double)this->nObjects * topHgt);
   if (this->nObjects < 3) {
     this->chaining = 0.0;
   } else {

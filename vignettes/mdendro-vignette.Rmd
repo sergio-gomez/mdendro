@@ -1,8 +1,8 @@
 ---
-title: "_mdendro_"
+title: "mdendro"
 subtitle: "Extended Agglomerative Hierarchical Clustering"
 author: "Alberto Fernández, Sergio Gómez"
-date: "v2.0 (2021-05-28)"
+date: "v2.1.0 (2021-09-12)"
 bibliography: mdendro-vignette-references.bib
 csl: mdendro-vignette-bibstyle.csl
 output:
@@ -15,7 +15,7 @@ output:
     toc_float:
       collapsed: false
 vignette: >
-  %\VignetteIndexEntry{_mdendro_}
+  %\VignetteIndexEntry{mdendro}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -54,7 +54,7 @@ There exist two main ways to install [**mdendro**](https://github.com/sergio-gom
     ```
     [RStudio](https://www.rstudio.com/) has a menu entry (Tools $\rightarrow$ Install Packages) for this job.
 
-- Installation from GitHub (you may need to install first [devtools](https://github.com/hadley/devtools)):
+- Installation from GitHub (you may need to install first [devtools](https://github.com/r-lib/devtools)):
     ```{r eval = FALSE}
     install.packages("devtools")
     library(devtools)
@@ -657,6 +657,7 @@ components <- data.frame(
           "`range`",
           "`order`",
           "`coph`",
+          "`binary`",
           "`cor`",
           "`sdr`",
           "`ac`",
@@ -675,6 +676,8 @@ components <- data.frame(
             "A vector giving a permutation of the original observations to allow for plotting, in the sense that the branches of a clustering tree will not cross."
            ,
             "Object of class `dist` containing the cophenetic (or ultrametric) proximity data in the output dendrogram, sorted in the same order as the input proximity data in `prox`."
+           ,
+            "A logical value indicating whether the output dendrogram is a binary tree or, on the contrary, it contains an agglomeration of more than two clusters due to the existence of tied proximity data. Its value is always `TRUE` when the `pair` grouping criterion is used."
            ,
             "Cophenetic correlation coefficient [[@Sokal1962]](#bibliography), defined as the Pearson correlation coefficient between the output cophenetic proximity data and the input proximity data. It is a measure of how faithfully the dendrogram preserves the pairwise proximity between objects."
            ,
@@ -747,6 +750,11 @@ knitr::kable(methods, col.names = c("`linkage`", "`hclust`", "`agnes`"))
 
 ## History
 
+#### _mdendro 2.1.0_
+
+New logical value added to objects of class `linkage`, indicating whether the output dendrogram is a binary tree.
+
+
 #### _mdendro 2.0_
 
 Fully new implementation from scratch, programmed in C++, using the efficient technique of neighbor chains, including plotting capabilities, and compatible with the main hierarchical clustering and dendrogram packages in R.
@@ -762,7 +770,7 @@ Initial R version based on the [MultiDendrograms](https://deim.urv.cat/~sergio.g
 
 - **Alberto Fernández**: Dept. Enginyeria Química, Universitat Rovira i Virgili, Tarragona (Spain). ([email](mailto:alberto.fernandez@urv.cat?subject=[mdendro])) ([ORCID](https://orcid.org/0000-0002-1241-1646)) ([Google Scholar](https://scholar.google.es/citations?user=AbH4r0IAAAAJ)) ([GitHub](https://github.com/albyfs))
 
-- **Sergio Gómez**: Dept. Enginyeria Informàtica i Matemàtiques, Universitat Rovira i Virgili, Tarragona (Spain). ([web](https://deim.urv.cat/~sergio.gomez/)) ([email](mailto:sergio.gomez@urv.cat?subject=[mdendro])) ([ORCID](http://orcid.org/0000-0003-1820-0062)) ([Google Scholar](https://scholar.google.es/citations?user=ETrjkSIAAAAJ)) ([GitHub](https://github.com/sergio-gomez)) ([Twitter](https://twitter.com/SergioGomezJ))
+- **Sergio Gómez**: Dept. Enginyeria Informàtica i Matemàtiques, Universitat Rovira i Virgili, Tarragona (Spain). ([web](https://deim.urv.cat/~sergio.gomez/)) ([email](mailto:sergio.gomez@urv.cat?subject=[mdendro])) ([ORCID](https://orcid.org/0000-0003-1820-0062)) ([Google Scholar](https://scholar.google.es/citations?user=ETrjkSIAAAAJ)) ([GitHub](https://github.com/sergio-gomez)) ([Twitter](https://twitter.com/SergioGomezJ))
 
 
 ## Bibliography

@@ -1,5 +1,5 @@
 #include <algorithm>  // std::max
-#include <cmath>  // std::abs, std::floor, std::log10
+#include <cmath>  // std::ceil, std::floor, std::log10, std::pow
 #include <sstream>  // std::ostringstream
 #include <string>  // std::string
 #include <vector>  // std::vector
@@ -31,13 +31,12 @@ Rcpp::List listMergers(int nObjects,
 Rcpp::List rcppLinkage(const Rcpp::NumericVector& prox, bool isDistance = true,
     int digits = -1, std::string method = "arithmetic",
     double methodPar = 0.0, bool isWeighted = false, bool isVariable = true) {
-  double diagValue = isDistance? 0.0 : 1.0;
-  mdendro::Matrix proxMatr(diagValue, Rcpp::as< std::vector<double> >(prox));
+  mdendro::Matrix proxMatr(Rcpp::as< std::vector<double> >(prox));
   if (digits < 0) {
     digits = proxMatr.getPrecision();
   } else {
     // Check maximum precision
-    double maxProx = std::max(std::abs(proxMatr.getMaximumValue()), 1.0);
+    double maxProx = std::max(proxMatr.getMaximumValue(), 1.0);
     int intDigits = 1 + (int)std::floor(std::log10(maxProx));
     int maxPrecision = mdendro::MAX_DIGITS - intDigits;
     if (digits > maxPrecision) {
@@ -56,9 +55,11 @@ Rcpp::List rcppLinkage(const Rcpp::NumericVector& prox, bool isDistance = true,
   // Save results
   int nObjects = proxMatr.rows();
   Rcpp::List lm = listMergers(nObjects, mergers);
-  mdendro::Ultrametricity ultra(proxMatr, mergers, isDistance);
+  double bottomHgt = isDistance?
+      0.0 : std::pow(10.0, std::ceil(std::log10(proxMatr.getMaximumValue())));
+  mdendro::Ultrametricity ultra(proxMatr, mergers, bottomHgt);
   mdendro::Matrix cophMatr = ultra.getCopheneticProximity();
-  Rcpp::NumericVector coph = Rcpp::wrap(cophMatr.getTriangularValues());
+  Rcpp::NumericVector coph = Rcpp::wrap(cophMatr.getValues());
   Rcpp::List lnk = Rcpp::List::create(
       Rcpp::Named("digits") = digits,
       Rcpp::Named("merger") = lm["merger"],
