@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4850373.svg)](https://doi.org/10.5281/zenodo.4850373)
+[![DOI](https://zenodo.org/badge/371634018.svg)](https://zenodo.org/badge/latestdoi/371634018)
 
 # mdendro
 Extended Agglomerative Hierarchical Clustering in R
