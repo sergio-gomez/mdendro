@@ -179,7 +179,7 @@ all.equal(lnk$ac, agn$ac)
 data <- "Name	VVMD5.1	VVMD5.2	VVMD7.1	VVMD7.2	VVMD27.1	VVMD27.2	VrZag62.1	VrZag62.2	VrZag79.1	VrZag79.2	VVS2-A1	VVS2.2
 Alfrocheiro	226	238	249	253	179	189	188	200	251	251	145	153
 Alvarinho	222	232	235	235	189	189	186	204	247	251	137	153
-Antão Vaz	234	236	245	259	181	183	204	204	247	247	147	153
+Antao Vaz	234	236	245	259	181	183	204	204	247	247	147	153
 Aragonez	236	236	235	249	183	183	196	200	247	251	145	147
 Arinto	226	238	239	247	181	185	186	188	247	251	145	153
 Avesso	222	240	235	235	181	189	186	186	243	247	137	153
@@ -188,12 +188,12 @@ Baga	232	240	235	235	179	189	188	204	247	251	145	157
 Bastardo	238	238	235	253	175	189	188	188	245	247	145	153
 Bical	226	240	235	259	179	185	188	194	251	251	135	147
 Camarate	234	236	239	249	181	189	188	200	247	251	147	153
-Castelão	236	238	239	253	179	181	188	188	247	251	145	147
+Castelao	236	238	239	253	179	181	188	188	247	251	145	147
 Cerceal Branco	226	236	245	253	179	181	188	204	247	251	145	159
 Encruzado	226	232	235	253	183	189	194	194	247	251	151	153
 Espadeiro	222	226	243	259	183	189	196	204	251	251	135	153
-Fernão Pires	226	240	235	235	183	194	188	194	247	247	147	153
-Folgasão	232	240	239	243	185	189	194	204	245	251	135	153
+Fernao Pires	226	240	235	235	183	194	188	194	247	247	147	153
+Folgasao	232	240	239	243	185	189	194	204	245	251	135	153
 Galego Dourado	228	240	235	239	185	189	188	194	245	251	135	135
 Gouveio	226	238	235	239	185	189	186	188	251	251	153	159
 Jaen	226	236	245	253	181	189	188	194	247	251	147	153
@@ -210,12 +210,12 @@ Rabigato	222	232	235	235	185	189	186	196	243	251	135	135
 Rufete	226	236	235	253	181	189	188	194	245	247	135	159
 Ramisco	226	238	235	259	181	185	188	196	247	251	135	159
 Sercial	226	238	235	249	181	185	188	194	247	259	135	153
-Síria	222	234	235	245	181	181	186	204	247	247	139	153
-Tália	226	232	245	249	179	183	194	200	245	251	135	145
+Siria	222	234	235	245	181	181	186	204	247	247	139	153
+Talia	226	232	245	249	179	183	194	200	245	251	135	145
 Terrantez	226	238	243	259	185	189	194	196	251	251	145	159
 Tinta Barroca	228	236	235	239	181	183	188	192	245	247	145	153
 Tinta Caiada	222	238	235	235	179	189	186	188	251	261	135	135
-Tinto Cão	232	234	235	259	181	185	186	194	247	251	135	135
+Tinto Cao	232	234	235	259	181	185	186	194	247	251	135	135
 Tinta Miuda	226	238	235	235	179	183	186	188	251	259	141	153
 Touriga Franca	226	228	235	239	181	183	192	194	245	247	145	153
 Touriga Nacional	226	236	235	235	181	189	188	194	245	245	145	153
@@ -224,9 +224,9 @@ Trincadeira	234	238	235	245	181	185	188	204	247	251	135	153
 Trincadeira das Pratas	238	240	235	253	189	194	188	188	251	257	143	145
 Verdelho	222	232	235	253	181	189	194	196	247	251	135	153
 Viosinho	232	232	235	239	185	189	186	188	243	245	135	153
-Vinhão	222	226	235	259	189	189	188	196	245	251	135	137
+Vinhao	222	226	235	259	189	189	188	196	245	251	135	137
 Vital	222	240	235	235	181	194	188	188	247	253	147	153
-Borraçal	232	238	235	235	181	185	194	194	247	247	135	137
+Borracal	232	238	235	235	181	185	194	194	247	247	135	137
 Fonte Cal	226	234	235	235	183	185	186	186	247	251	135	153"
 
 dt <- read.table(textConnection(data), header = TRUE, sep = "\t", dec = ".")
@@ -319,6 +319,10 @@ for (i in 1:length(vals)) {
 #          method = "arithmetic", par.method = 0, weighted = FALSE,
 #          group = "variable")
 #  
+#  descval(prox, type.prox = "distance", digits = NULL,
+#          method = "versatile", par.method = c(-1,0,+1), weighted = FALSE,
+#          group = "variable", measure = "cor")
+#  
 #  descplot(prox, ..., type.prox = "distance", digits = NULL,
 #           method = "versatile", par.method = c(-1, 0, +1), weighted = FALSE,
 #           group = "variable", measure = "cor", slope = 10)
@@ -335,15 +339,15 @@ arguments <- data.frame(
           "`measure`",
           "`slope`",
           "`...`"),
-  desc = c("A structure of class `dist` containing proximity data (distances or similarities). Similarity data must be between 0 and 1."
+  desc = c("A structure of class `dist` containing non-negative proximity data (distances or similarities). All the linkage methods are used with non-squared proximity data as input, except for method `\"centroid\"`, which is meant to be used with squared Euclidean distances."
            ,
-            "A character string to indicate whether the proximity data represent `\"distance\"` (default) or `\"similarity\"` between objects."
+            "A character string to indicate whether the proximity data represent `\"distance\"` (default) or `\"similarity\"` between objects. Methods `\"ward\"` and `\"centroid\"` cannot be used with similarity data as input, while the rest of the linkage methods can be used with both distances and similarities."
            ,
             "An integer value specifying the precision, i.e., the number of significant decimal digits to be used for the comparisons between proximity data. This is an important parameter, since equal proximity data at a certain precision may become different by increasing its value. Thus, it may be responsible of the existence of tied proximity data. If the value of this parameter is negative or `NULL` (default), then the precision is automatically set to that of the input proximity value with the largest number of significant decimal digits."
            ,
-            "A character string specifying the linkage method to be used. For `linkage()`, this should be one of: `\"single\"`, `\"complete\"`, `\"arithmetic\"`, `\"geometric\"`, `\"harmonic\"`, `\"versatile\"`, `\"ward\"`, `\"centroid\"` or `\"flexible\"`. Methods `\"ward\"` and `\"centroid\"` cannot be used with similarity data. Methods `\"versatile\"` and `\"flexible\"` are the only two methods that can be used in `descplot()`."
+            "A character string specifying the linkage method to be used. For `linkage()`, this should be one of: `\"single\"`, `\"complete\"`, `\"arithmetic\"`, `\"geometric\"`, `\"harmonic\"`, `\"versatile\"`, `\"ward\"`, `\"centroid\"` or `\"flexible\"`. Methods `\"versatile\"` and `\"flexible\"` are the only two methods that can be used in `descval()` and `descplot()`."
            ,
-            "A real value, in the case of `linkage()`, or a vector of real values, in the case of `descplot()`, required as parameter for the methods `\"versatile\"` and `\"flexible\"`. The range of possible values is [-Inf, +Inf] for `\"versatile\"`, and [-1, +1] for `\"flexible\"`."
+            "A real value, in the case of `linkage()`, or a vector of real values, in the case of `descval()` and `descplot()`, required as parameter for the methods `\"versatile\"` and `\"flexible\"`. The range of possible values is [-Inf, +Inf] for `\"versatile\"`, and [-1, +1] for `\"flexible\"`."
            ,
             "A logical value to choose between the weighted and the unweighted (default) versions of some linkage methods. Weighted linkage gives merging branches in a dendrogram equal weight regardless of the number of objects carried on each branch. Such a procedure weights objects unequally, contrasting with unweighted linkage that gives equal weight to each object in the clusters. This parameter has no effect on the `\"single\"` and `\"complete\"` linkages."
            ,

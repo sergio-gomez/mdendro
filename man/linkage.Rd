@@ -1,5 +1,6 @@
 \name{linkage}
 \alias{linkage}
+\alias{descval}
 \alias{descplot}
 \title{Extended Agglomerative Hierarchical Clustering}
 \description{
@@ -13,16 +14,25 @@ linkage(prox, type.prox = "distance", digits = NULL,
         method = "arithmetic", par.method = 0, weighted = FALSE,
         group = "variable")
 
+descval(prox, type.prox = "distance", digits = NULL,
+        method = "versatile", par.method = c(-1,0,+1), weighted = FALSE,
+        group = "variable", measure = "cor")
+
 descplot(prox, ..., type.prox = "distance", digits = NULL,
          method = "versatile", par.method = c(-1,0,+1), weighted = FALSE,
          group = "variable", measure = "cor", slope = 10)
 }
 \arguments{
   \item{prox}{A structure of class \code{"dist"} containing non-negative
-    proximity data (distances or similarities).}
+    proximity data (distances or similarities). All the linkage methods are used
+    with non-squared proximity data as input, except for method 
+    \code{"centroid"}, which is meant to be used with squared Euclidean 
+    distances.}
   \item{type.prox}{A character string to indicate whether the proximity data
     represent \code{"distance"} (default) or \code{"similarity"} between
-    objects.}
+    objects. Methods \code{"ward"} and \code{"centroid"} cannot be used with 
+    similarity data as input, while the rest of the linkage methods can be used 
+    with both distances and similarities.}
   \item{digits}{An integer value specifying the precision, i.e. the number of
     significant decimal digits to be used for the comparisons between proximity
     data. This is an important parameter, since equal proximity data at a
@@ -34,15 +44,16 @@ descplot(prox, ..., type.prox = "distance", digits = NULL,
   \item{method}{A character string specifying the linkage method to be used. For
     \code{linkage()}, this should be one of: \code{"single"}, \code{"complete"},
     \code{"arithmetic"}, \code{"geometric"}, \code{"harmonic"},
-    \code{"versatile"}, \code{"ward"}, \code{"centroid"} or \code{"flexible"}.
-    \code{"ward"} and \code{"centroid"} methods cannot be used with similarity
-    data. \code{"versatile"} and \code{"flexible"} are the only two methods that
-    can be used in \code{descplot()}. See the \emph{Details} section.}
+    \code{"versatile"}, \code{"ward"}, \code{"centroid"} or \code{"flexible"}. 
+    Methods \code{"versatile"} and \code{"flexible"} are the only two methods 
+    that can be used in \code{descval()} and \code{descplot()}. See the 
+    \emph{Details} section.}
   \item{par.method}{A real value, in the case of \code{linkage()}, or a vector
-    of real values, in the case of \code{descplot()}, required as parameter for
-    the methods \code{"versatile"} and \code{"flexible"}. The range of possible
-    values is \code{[-Inf, +Inf]} for \code{"versatile"}, and \code{[-1, +1]}
-    for \code{"flexible"}. See the \emph{Details} section.}
+    of real values, in the case of \code{descval()} and \code{descplot()}, 
+    required as parameter for the methods \code{"versatile"} and 
+    \code{"flexible"}. The range of possible values is \code{[-Inf, +Inf]} for 
+    \code{"versatile"}, and \code{[-1, +1]} for \code{"flexible"}. See the 
+    \emph{Details} section.}
   \item{weighted}{A logical value to choose between the weighted and the
     unweighted (default) versions of some linkage methods. Weighted linkage
     gives merging branches in a dendrogram equal weight regardless of the number
@@ -66,17 +77,15 @@ descplot(prox, ..., type.prox = "distance", digits = NULL,
   \item{\dots}{Graphical parameters (see \code{\link{par}}) may also be supplied
     and are passed to \code{\link{plot.default}}.}
 }
-\encoding{latin1}
 \details{
   Starting from a matrix of proximity data (distances or similarities),
   \code{linkage()} calculates its dendrogram with the most commonly used
   agglomerative hierarchical clustering methods, i.e. single linkage, complete
   linkage, arithmetic linkage (also known as average linkage) and Ward's method.
   Importantly, it contains a new parameterized method named versatile linkage
-  (\enc{Fernández}{Fernandez} and \enc{Gómez}{Gomez}, 2020), which includes
-  single linkage, complete linkage and average linkage as particular cases, and
-  which naturally defines two new methods, geometric linkage and harmonic
-  linkage.
+  (Fernandez and Gomez, 2020), which includes single linkage, complete linkage 
+  and average linkage as particular cases, and which naturally defines two new 
+  methods, geometric linkage and harmonic linkage.
 
   The difference between the available hierarchical clustering methods rests in
   the way the proximity between two clusters is defined from the proximity
@@ -105,8 +114,10 @@ descplot(prox, ..., type.prox = "distance", digits = NULL,
       available only for distance data.
     \item \code{"centroid"}: the distance between clusters equals the square of
       the Euclidean distance between the centroids of each cluster. Also known
-      as WPGMC (weighted version) or UPGMC (unweighted version). This method is
-      available only for distance data.
+      as WPGMC (weighted version) or UPGMC (unweighted version). This method is 
+      available only for distance data, which are meant to be squared Euclidean 
+      distances. Note that both centroid versions, weighted and unweighted, may 
+      yield inversions that make dendrograms difficult to interpret.
     \item \code{"flexible"}: the proximity between clusters is a weighted sum of
       the proximity between clusters in the previous iteration. It depends on
       the value of \code{par.method}, in the range \code{[-1, +1]}, and it is
@@ -116,18 +127,20 @@ descplot(prox, ..., type.prox = "distance", digits = NULL,
   With the argument \code{group}, users can choose between a variable-group
   approach (default) that returns a multifurcated dendrogram or multidendrogram,
   and a pair-group approach that returns a bifurcated dendrogram.
-  Multidendrograms were introduced (\enc{Fernández}{Fernandez} and 
-  \enc{Gómez}{Gomez}, 2008) to solve the non-uniqueness problem that arises when
-  two or more minimum proximity values between different clusters are equal
-  during the agglomerative process. Multidendrograms group more than two
-  clusters when tied proximity values occur, what produces a uniquely determined
-  solution that does not depend on the order of the input data. When there are
-  no tied proximity values, the variable-group approach gives the same result as
-  the pair-group one.
+  Multidendrograms were introduced (Fernandez and Gomez, 2008) to solve the 
+  non-uniqueness problem that arises when two or more minimum proximity values 
+  between different clusters are equal during the agglomerative process. 
+  Multidendrograms group more than two clusters when tied proximity values 
+  occur, what produces a uniquely determined solution that does not depend on 
+  the order of the input data. When there are no tied proximity values, the 
+  variable-group approach gives the same result as the pair-group one.
 
-  \code{descplot()} can be used with methods \code{"versatile"} and
-  \code{"flexible"} to analyze graphically the variation of any descriptive
-  measure as a function of the corresponding method parameter.
+  \code{descval()} and \code{descplot()} can be used with methods 
+  \code{"versatile"} and \code{"flexible"} to analyze the variation of any 
+  descriptive measure as a function of the corresponding method parameter. Both 
+  functions return a vector with the numerical values of the descriptive measure
+  evaluated at the points contained in the parameter \code{par.method}. Function
+  \code{descplot()}, in addition, draws the corresponding plot.
 }
 \value{
   An object of class \code{"linkage"} that describes the multifurcated
@@ -160,26 +173,25 @@ descplot(prox, ..., type.prox = "distance", digits = NULL,
     defined as the Pearson correlation coefficient between the output cophenetic
     proximity data and the input proximity data. It is a measure of how
     faithfully the dendrogram preserves the pairwise proximity between objects.}
-  \item{sdr}{Space distortion ratio (\enc{Fernández}{Fernandez} and
-    \enc{Gómez}{Gomez}, 2020), calculated as the difference between the maximum
-    and minimum cophenetic proximity data, divided by the difference between the
-    maximum and minimum initial proximity data. Space dilation occurs when the
-    space distortion ratio is greater than 1.}
+  \item{sdr}{Space distortion ratio (Fernandez and Gomez, 2020), calculated as 
+    the difference between the maximum and minimum cophenetic proximity data, 
+    divided by the difference between the maximum and minimum initial proximity 
+    data. Space dilation occurs when the space distortion ratio is greater than 
+    1.}
   \item{ac}{Agglomerative coefficient (Rousseeuw, 1986), a number between 0
     and 1 measuring the strength of the clustering structure obtained.}
   \item{cc}{Chaining coefficient (Williams \emph{et al.}, 1966), a number
     between 0 and 1 measuring the tendency for clusters to grow by the addition
     of clusters much smaller rather than by fusion with other clusters of
     comparable size.}
-  \item{tb}{Tree balance (\enc{Fernández}{Fernandez} and
-    \enc{Gómez}{Gomez}, 2020), a number between 0 and 1 measuring the equality
-    in the number of leaves in the branches concerned at each fusion in the
-    hierarchical tree.}
+  \item{tb}{Tree balance (Fernandez and Gomez, 2020), a number between 0 and 1 
+    measuring the equality in the number of leaves in the branches concerned at 
+    each fusion in the hierarchical tree.}
 
   Class \code{"linkage"} has methods for the following generic functions:
-  \code{\link{summary}}, \code{plot} (see \code{\link{plot.linkage}}),
-  \code{\link{as.dendrogram}}, \code{\link{as.hclust}} and
-  \code{\link{cophenetic}}.
+  \code{\link{print}}, \code{\link{summary}}, \code{plot} (see 
+  \code{\link{plot.linkage}}), \code{\link{as.dendrogram}}, 
+  \code{\link{as.hclust}} and \code{\link{cophenetic}}.
 }
 \note{
   Except for the cases containing tied proximity data, the following
@@ -206,18 +218,17 @@ descplot(prox, ..., type.prox = "distance", digits = NULL,
   }
 }
 \author{
-  Alberto \enc{Fernández}{Fernandez} \email{alberto.fernandez@urv.cat}
-  and Sergio \enc{Gómez}{Gomez} \email{sergio.gomez@urv.cat}.
+  Alberto Fernandez \email{alberto.fernandez@urv.cat} and Sergio Gomez 
+  \email{sergio.gomez@urv.cat}.
 }
 \references{
-  \enc{Fernández}{Fernandez}, A.; \enc{Gómez}{Gomez}, S. (2008). Solving
-  non-uniqueness in agglomerative hierarchical clustering using
-  multidendrograms. \emph{Journal of Classification}, \bold{25}, 43--65.
+  Fernandez, A.; Gomez, S. (2008). Solving non-uniqueness in agglomerative 
+  hierarchical clustering using multidendrograms. 
+  \emph{Journal of Classification}, \bold{25}, 43--65.
 
-  \enc{Fernández}{Fernandez}, A.; \enc{Gómez}{Gomez}, S. (2020). Versatile
-  linkage: a family of space-conserving strategies for agglomerative
-  hierarchical clustering. \emph{Journal of Classification}, \bold{37},
-  584--597.
+  Fernandez, A.; Gomez, S. (2020). Versatile linkage: a family of 
+  space-conserving strategies for agglomerative hierarchical clustering. 
+  \emph{Journal of Classification}, \bold{37}, 584--597.
 
   Rousseeuw, P.J. (1986). A visual display for hierarchical classification. In
   E. Diday \emph{et al.} (eds.) \emph{Data Analysis and Informatics 4}, pp.

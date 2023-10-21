@@ -19,9 +19,9 @@ Extended Agglomerative Hierarchical Clustering in R
 
 - Calculation of five **descriptors** of the final dendrogram: _cophenetic correlation coefficient_, _space distortion ratio_, _agglomerative coefficient_, _chaining coefficient_, and _tree balance_.
 
-- Plots of the descriptors for the parametric methods.
+- Calculation and plots of the descriptors for the parametric methods.
 
-All this functionality is obtained with two functions: `linkage`, and `descplot`. Function `linkage` may be considered as a replacement for functions `hclust` (in package [stats](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/00Index.html)) and `agnes` (in package [cluster](https://stat.ethz.ch/R-manual/R-devel/library/cluster/html/00Index.html)). To enhance usability and interoperability, the `linkage` class includes several methods for plotting, summarizing information, and class conversion.
+All this functionality is obtained with three functions: `linkage`, `descval` and `descplot`. Function `linkage` may be considered as a replacement for functions `hclust` (in package [stats](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/00Index.html)) and `agnes` (in package [cluster](https://stat.ethz.ch/R-manual/R-devel/library/cluster/html/00Index.html)). To enhance usability and interoperability, the `linkage` class includes several methods for plotting, summarizing information, and class conversion.
 
 
 ## References

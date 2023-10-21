@@ -8,7 +8,7 @@ linkage <- function(prox, type.prox = "distance", digits = NULL,
     method = "arithmetic", par.method = 0, weighted = FALSE, group = "variable")
 {
   # Check parameters
-  if (class(prox) != "dist") {
+  if (!inherits(prox, "dist")) {
     stop("'prox' must be an object of class \"dist\"")
   }
   if (attr(prox, "Size") < 2L) {
@@ -87,6 +87,21 @@ linkage <- function(prox, type.prox = "distance", digits = NULL,
     class = "linkage")
 }
 
+descval <- function(prox, type.prox = "distance", digits = NULL,
+    method = "versatile", par.method = c(-1,0,+1), weighted = FALSE,
+    group = "variable", measure = "cor")
+{
+  method <- match.arg(method, c("versatile", "flexible"))
+  measure <- match.arg(measure, MEASURES)
+  y <- numeric(length(par.method))
+  for (i in seq_along(par.method)) {
+    lnk <- linkage(prox, type.prox=type.prox, digits=digits, method=method,
+        par.method=par.method[i], weighted=weighted, group=group)
+    y[i] <- lnk[[measure]]
+  }
+  y
+}
+
 descplot <- function(prox, ..., type.prox = "distance", digits = NULL,
     method = "versatile", par.method = c(-1,0,+1), weighted = FALSE,
     group = "variable", measure = "cor", slope = 10)
@@ -96,12 +111,8 @@ descplot <- function(prox, ..., type.prox = "distance", digits = NULL,
   if (slope <= 0) {
     stop("'slope' must be a positive number")
   }
-  y <- numeric(length(par.method))
-  for (i in seq_along(par.method)) {
-    lnk <- linkage(prox, type.prox=type.prox, digits=digits, method=method,
-        par.method=par.method[i], weighted=weighted, group=group)
-    y[i] <- lnk[[measure]]
-  }
+  y <- descval(prox, type.prox, digits, method, par.method, weighted, group,
+      measure)
   if (method == "flexible") {
     plot(x=par.method, y=y, ylab=measure, xlab="par.method", ...)
   } else {  # (method == "versatile")
@@ -109,16 +120,17 @@ descplot <- function(prox, ..., type.prox = "distance", digits = NULL,
     plot(x=x, y=y, ylab=measure, xlab="par.method", xaxt="n", ...)
     axis(side=1, at=x, labels=par.method)
   }
+  invisible(y)
 }
 
-summary.linkage <- function(object, ...) {
+print.linkage <- function(x, ...) {
   # Print call
   cat("Call:\n", sep="")
-  cl <- object$call
+  cl <- x$call
   cat(deparse(cl[[1L]]), "(prox = ", deparse(cl$prox), ",\n", sep="")
   type.prox <- match.arg(cl$type.prox, TYPES.PROX)
   cat("        type.prox = \"", type.prox, "\",\n", sep="")
-  cat("        digits = ", object$digits, ",\n", sep="")
+  cat("        digits = ", x$digits, ",\n", sep="")
   method <- match.arg(cl$method, METHODS)
   cat("        method = \"", method, "\",\n", sep="")
   if ((method == "versatile") || (method == "flexible")) {
@@ -131,11 +143,18 @@ summary.linkage <- function(object, ...) {
   }
   group <- match.arg(cl$group, GROUPS)
   cat("        group = \"", group, "\")\n\n", sep="")
+  # Print objects
+  cat("Number of objects:", length(x$order), "\n")
+  invisible(x)
+}
+
+summary.linkage <- function(object, ...) {
+  print(object, ...)
   # Print binary
-  cat("Binary dendrogram: ", object$binary, "\n\n", sep="")
+  cat("\nBinary dendrogram: ", object$binary, "\n", sep="")
   # Print measures
-  cat("Descriptive measures:\n", sep="")
-  print(c(cor = object$cor, sdr = object$sdr, ac = object$ac, cc = object$cc,
+  cat("\nDescriptive measures:\n", sep="")
+  print(c(cor = object$cor, sdr = object$sdr, ac = object$ac, cc = object$cc, 
       tb = object$tb), ...)
   invisible(object)
 }
