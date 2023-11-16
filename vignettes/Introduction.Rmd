@@ -1,7 +1,7 @@
 ---
 title: "A quick introduction to mdendro"
 author: "Alberto Fernández, Sergio Gómez"
-date: "v2.2.0 (2023-10-15)"
+date: "v2.2 (2023-11-17)"
 bibliography: Introduction-references.bib
 csl: Introduction-bibstyle.csl
 output:
@@ -310,7 +310,7 @@ all.equal(lnk$ac, agn$ac)
 
 ## Rationale
 
-Package [**mdendro**](https://github.com/sergio-gomez/mdendro) was initially designed to make publicly available implementations of our work on agglomerative hierarchical clustering (AHC) [[@Fernandez2008; @Fernandez2020]](#bibliography), trying to reach a wide community through the use of the R language. We already have two implementations, a Java application called [MultiDendrograms](https://deim.urv.cat/~sergio.gomez/multidendrograms.php), and a `Hierarchical_Clustering` tool within our [Radatools](https://deim.urv.cat/~sergio.gomez/radatools.php) set of programs for the analysis of complex networks, whose Ada source code can be found in [Radalib](https://deim.urv.cat/~sergio.gomez/radalib.php).
+Package [**mdendro**](https://github.com/sergio-gomez/mdendro) was initially designed to make publicly available implementations of our work on agglomerative hierarchical clustering (AHC) [[@Fernandez2008; @Fernandez2020]](#bibliography), trying to reach a wide community through the use of the R language. We already have two implementations, a Java application called [MultiDendrograms](https://webs-deim.urv.cat/~sergio.gomez/multidendrograms.php), and a `Hierarchical_Clustering` tool within our [Radatools](https://webs-deim.urv.cat/~sergio.gomez/radatools.php) set of programs for the analysis of complex networks, whose Ada source code can be found in [Radalib](https://webs-deim.urv.cat/~sergio.gomez/radalib.php).
 
 Apart from providing access to our algorithms, we also wanted to simplify how to use them, and improve the performance of their implementations. All this was accomplished by using state-of-the-art methods based on neighbor chains, implementing the base code in C++, and adding functionality to make the new package very similar and compatible with the main ones currently in use, namely the functions `hclust` in package [stats](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/00Index.html), and `agnes` in package [cluster](https://stat.ethz.ch/R-manual/R-devel/library/cluster/html/00Index.html). The result is a package [**mdendro**](https://github.com/sergio-gomez/mdendro) that includes and largely extends the functionality of these reference functions, thus with the option of being a replacement for them.
 
@@ -442,7 +442,7 @@ The reach of the non-uniqueness problem for this example is the existence of
 
 - 760,590,880 structurally different binary dendrograms
 
-This number corresponds to arithmetic linkage and a resolution of 3 decimal digits, and has been computed using the `Hierarchical_Clustering` tool in [Radatools](https://deim.urv.cat/~sergio.gomez/radatools.php). We can check this fact by just calculating the binary dendrogram for random permutations of the data, and plotting the broad range of values of their cophenetic correlations, which clearly indicate the existence of many structurally different dendrograms:
+This number corresponds to arithmetic linkage and a resolution of 3 decimal digits, and has been computed using the `Hierarchical_Clustering` tool in [Radatools](https://webs-deim.urv.cat/~sergio.gomez/radatools.php). We can check this fact by just calculating the binary dendrogram for random permutations of the data, and plotting the broad range of values of their cophenetic correlations, which clearly indicate the existence of many structurally different dendrograms:
 
 ```{r}
 nreps <- 1000
@@ -753,7 +753,12 @@ knitr::kable(methods, col.names = c("`linkage`", "`hclust`", "`agnes`"))
 
 ## History
 
-#### _mdendro 2.1.0_
+#### _mdendro 2.2_
+
+New function `descval`, that can be used instead of `descplot` when the plots are not needed.
+
+
+#### _mdendro 2.1_
 
 New logical value added to objects of class `linkage`, indicating whether the output dendrogram is a binary tree.
 
@@ -765,7 +770,7 @@ Fully new implementation from scratch, programmed in C++, using the efficient te
 
 #### _mdendro 1.0_
 
-Initial R version based on the [MultiDendrograms](https://deim.urv.cat/~sergio.gomez/multidendrograms.php) Java core for the calculations.
+Initial R version based on the [MultiDendrograms](https://webs-deim.urv.cat/~sergio.gomez/multidendrograms.php) Java core for the calculations.
 
 
 
@@ -773,7 +778,7 @@ Initial R version based on the [MultiDendrograms](https://deim.urv.cat/~sergio.g
 
 - **Alberto Fernández**: Dept. Enginyeria Química, Universitat Rovira i Virgili, Tarragona (Spain). ([email](mailto:alberto.fernandez@urv.cat?subject=[mdendro])) ([ORCID](https://orcid.org/0000-0002-1241-1646)) ([Google Scholar](https://scholar.google.es/citations?user=AbH4r0IAAAAJ)) ([GitHub](https://github.com/albyfs))
 
-- **Sergio Gómez**: Dept. Enginyeria Informàtica i Matemàtiques, Universitat Rovira i Virgili, Tarragona (Spain). ([web](https://deim.urv.cat/~sergio.gomez/)) ([email](mailto:sergio.gomez@urv.cat?subject=[mdendro])) ([ORCID](https://orcid.org/0000-0003-1820-0062)) ([Google Scholar](https://scholar.google.es/citations?user=ETrjkSIAAAAJ)) ([GitHub](https://github.com/sergio-gomez)) ([Twitter](https://twitter.com/SergioGomezJ))
+- **Sergio Gómez**: Dept. Enginyeria Informàtica i Matemàtiques, Universitat Rovira i Virgili, Tarragona (Spain). ([web](https://webs-deim.urv.cat/~sergio.gomez/)) ([email](mailto:sergio.gomez@urv.cat?subject=[mdendro])) ([ORCID](https://orcid.org/0000-0003-1820-0062)) ([Google Scholar](https://scholar.google.es/citations?user=ETrjkSIAAAAJ)) ([GitHub](https://github.com/sergio-gomez)) ([Twitter](https://twitter.com/SergioGomezJ))
 
 
 ## Bibliography

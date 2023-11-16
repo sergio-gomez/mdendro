@@ -18,7 +18,7 @@ Authors@R: c(person(given = "Alberto", family = "Fernandez",
                     email = "sergio.gomez@urv.cat",
                     role = c("aut"),
                     comment = c(ORCID = "0000-0003-1820-0062")))
-URL: https://deim.urv.cat/~sergio.gomez/mdendro.php
+URL: https://webs-deim.urv.cat/~sergio.gomez/mdendro.php
 License: AGPL-3
 Imports: graphics, grDevices, Rcpp, stats, utils
 LinkingTo: Rcpp

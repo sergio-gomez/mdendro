@@ -34,7 +34,7 @@ All this functionality is obtained with three functions: `linkage`, `descval` an
 
 - **Alberto Fernández**: Dept. Enginyeria Química, Universitat Rovira i Virgili, Tarragona (Spain). ([email](mailto:alberto.fernandez@urv.cat?subject=[mdendro])) ([ORCID](https://orcid.org/0000-0002-1241-1646)) ([Google Scholar](https://scholar.google.es/citations?user=AbH4r0IAAAAJ)) ([GitHub](https://github.com/albyfs))
 
-- **Sergio Gómez**: Dept. Enginyeria Informàtica i Matemàtiques, Universitat Rovira i Virgili, Tarragona (Spain). ([web](https://deim.urv.cat/~sergio.gomez/)) ([email](mailto:sergio.gomez@urv.cat?subject=[mdendro])) ([ORCID](http://orcid.org/0000-0003-1820-0062)) ([Google Scholar](https://scholar.google.es/citations?user=ETrjkSIAAAAJ)) ([GitHub](https://github.com/sergio-gomez)) ([Twitter](https://twitter.com/SergioGomezJ))
+- **Sergio Gómez**: Dept. Enginyeria Informàtica i Matemàtiques, Universitat Rovira i Virgili, Tarragona (Spain). ([web](https://webs-deim.urv.cat/~sergio.gomez/)) ([email](mailto:sergio.gomez@urv.cat?subject=[mdendro])) ([ORCID](http://orcid.org/0000-0003-1820-0062)) ([Google Scholar](https://scholar.google.es/citations?user=ETrjkSIAAAAJ)) ([GitHub](https://github.com/sergio-gomez)) ([Twitter](https://twitter.com/SergioGomezJ))
 
 
 ## Documentation
