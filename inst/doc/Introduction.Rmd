@@ -1,7 +1,7 @@
 ---
 title: "A quick introduction to mdendro"
 author: "Alberto Fernández, Sergio Gómez"
-date: "v2.2.0 (2023-10-15)"
+date: "v2.2 (2023-12-31)"
 bibliography: Introduction-references.bib
 csl: Introduction-bibstyle.csl
 output:
@@ -306,11 +306,63 @@ all.equal(lnk$cor, hcl.cor)
 all.equal(lnk$ac, agn$ac)
 ```
 
+The computational efficiency of the three functions is compared next, both in linear scale (left) and in log-log scale (right). It can be observed that the time cost of functions `linkage` and `hclust` is quadratic, whereas that of function `agnes` is cubic:
+
+```{r echo = FALSE}
+data1 <- "size	linkage	hclust	agnes
+100	0.002418476	0.00042316	0.001684678
+200	0.007544279	0.001307783	0.009056216
+300	0.015805522	0.002864888	0.02951194
+400	0.027603853	0.005111802	0.071189168
+500	0.042675239	0.00809769	0.140186185
+600	0.061279169	0.011726028	0.242574352
+700	0.083935329	0.016194075	0.389242691
+800	0.110321289	0.02219432	0.590352282
+900	0.13980338	0.027923515	0.825063014
+1000	0.174352127	0.034507304	1.174618176"
+
+data2 <- "size	linkage	hclust	agnes
+100	0.002410549	0.000430888	0.001698413
+150	0.004601389	0.000794929	0.004301476
+226	0.009277806	0.00163087	0.012544835
+340	0.020123589	0.003722471	0.043541342
+511	0.04417814	0.008454096	0.149150702
+767	0.098688802	0.019515243	0.511564597
+1153	0.225368944	0.051520914	1.828566128
+1734	0.534596482	0.135653079	8.478335091
+2606	1.219858959	0.332794896	35.85584442
+3918	2.776398867	0.809999958	135.047423
+5889	7.077296874	2.201634088	
+8852	14.7496921	4.648856354	
+13305	31.46323871	10.00237813	
+20000	82.56078995	21.75731349	"
+
+dt1 <- read.table(textConnection(data1), header = TRUE, sep = "\t")
+dt2 <- read.table(textConnection(data2), header = TRUE, sep = "\t")
+
+par(mfrow = c(1, 2))
+
+plot(x = dt1$size, y = dt1$agnes, type = "l", col = 2, 
+     xlab = "Size", ylab = "Time (s)")
+lines(x = dt1$size, y = dt1$linkage, type = "l", col = 3)
+lines(x = dt1$size, y = dt1$hclust, type = "l", col = 4)
+legend(x = "topleft", legend = c("agnes", "linkage", "hclust"), col = 2:4, 
+       lty = "solid")
+
+options(scipen = 10)
+plot(x = dt2$size, y = dt2$agnes, type = "l", col = 2, 
+     xlab = "Size", ylab = "Time (s)", log = "xy")
+lines(x = dt2$size, y = dt2$linkage, type = "l", col = 3)
+lines(x = dt2$size, y = dt2$hclust, type = "l", col = 4)
+legend(x = "topleft", legend = c("agnes", "linkage", "hclust"), col = 2:4, 
+       lty = "solid")
+```
+
 
 
 ## Rationale
 
-Package [**mdendro**](https://github.com/sergio-gomez/mdendro) was initially designed to make publicly available implementations of our work on agglomerative hierarchical clustering (AHC) [[@Fernandez2008; @Fernandez2020]](#bibliography), trying to reach a wide community through the use of the R language. We already have two implementations, a Java application called [MultiDendrograms](https://deim.urv.cat/~sergio.gomez/multidendrograms.php), and a `Hierarchical_Clustering` tool within our [Radatools](https://deim.urv.cat/~sergio.gomez/radatools.php) set of programs for the analysis of complex networks, whose Ada source code can be found in [Radalib](https://deim.urv.cat/~sergio.gomez/radalib.php).
+Package [**mdendro**](https://github.com/sergio-gomez/mdendro) was initially designed to make publicly available implementations of our work on agglomerative hierarchical clustering (AHC) [[@Fernandez2008; @Fernandez2020]](#bibliography), trying to reach a wide community through the use of the R language. We already have two implementations, a Java application called [MultiDendrograms](https://webs-deim.urv.cat/~sergio.gomez/multidendrograms.php), and a `Hierarchical_Clustering` tool within our [Radatools](https://webs-deim.urv.cat/~sergio.gomez/radatools.php) set of programs for the analysis of complex networks, whose Ada source code can be found in [Radalib](https://webs-deim.urv.cat/~sergio.gomez/radalib.php).
 
 Apart from providing access to our algorithms, we also wanted to simplify how to use them, and improve the performance of their implementations. All this was accomplished by using state-of-the-art methods based on neighbor chains, implementing the base code in C++, and adding functionality to make the new package very similar and compatible with the main ones currently in use, namely the functions `hclust` in package [stats](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/00Index.html), and `agnes` in package [cluster](https://stat.ethz.ch/R-manual/R-devel/library/cluster/html/00Index.html). The result is a package [**mdendro**](https://github.com/sergio-gomez/mdendro) that includes and largely extends the functionality of these reference functions, thus with the option of being a replacement for them.
 
@@ -405,7 +457,6 @@ Borracal	232	238	235	235	181	185	194	194	247	247	135	137
 Fonte Cal	226	234	235	235	183	185	186	186	247	251	135	153"
 
 dt <- read.table(textConnection(data), header = TRUE, sep = "\t", dec = ".")
-# knitr::kable(dt)
 
 n <- nrow(dt)
 cols <- 2:ncol(dt)
@@ -442,7 +493,7 @@ The reach of the non-uniqueness problem for this example is the existence of
 
 - 760,590,880 structurally different binary dendrograms
 
-This number corresponds to arithmetic linkage and a resolution of 3 decimal digits, and has been computed using the `Hierarchical_Clustering` tool in [Radatools](https://deim.urv.cat/~sergio.gomez/radatools.php). We can check this fact by just calculating the binary dendrogram for random permutations of the data, and plotting the broad range of values of their cophenetic correlations, which clearly indicate the existence of many structurally different dendrograms:
+This number corresponds to arithmetic linkage and a resolution of 3 decimal digits, and has been computed using the `Hierarchical_Clustering` tool in [Radatools](https://webs-deim.urv.cat/~sergio.gomez/radatools.php). We can check this fact by just calculating the binary dendrogram for random permutations of the data, and plotting the broad range of values of their cophenetic correlations, which clearly indicate the existence of many structurally different dendrograms:
 
 ```{r}
 nreps <- 1000
@@ -555,11 +606,11 @@ arguments <- data.frame(
           "`measure`",
           "`slope`",
           "`...`"),
-  desc = c("A structure of class `dist` containing non-negative proximity data (distances or similarities). All the linkage methods are used with non-squared proximity data as input, except for method `\"centroid\"`, which is meant to be used with squared Euclidean distances."
+  desc = c("A structure of class `dist` containing non-negative proximity data (distances or similarities). All the linkage methods are meant to be used with non-squared proximity data as input."
            ,
             "A character string to indicate whether the proximity data represent `\"distance\"` (default) or `\"similarity\"` between objects. Methods `\"ward\"` and `\"centroid\"` cannot be used with similarity data as input, while the rest of the linkage methods can be used with both distances and similarities."
            ,
-            "An integer value specifying the precision, i.e., the number of significant decimal digits to be used for the comparisons between proximity data. This is an important parameter, since equal proximity data at a certain precision may become different by increasing its value. Thus, it may be responsible of the existence of tied proximity data. If the value of this parameter is negative or `NULL` (default), then the precision is automatically set to that of the input proximity value with the largest number of significant decimal digits."
+            "An integer value specifying the precision, i.e., the number of significant decimal digits to be used for the comparisons between proximity data. This is an important parameter, since equal proximity data at a certain precision may become different by increasing its value. Thus, it may be responsible of the existence of tied proximity data. If the value of this parameter is negative or `NULL` (default), then the precision is automatically set to the number of significant decimal digits in the input proximity data."
            ,
             "A character string specifying the linkage method to be used. For `linkage()`, this should be one of: `\"single\"`, `\"complete\"`, `\"arithmetic\"`, `\"geometric\"`, `\"harmonic\"`, `\"versatile\"`, `\"ward\"`, `\"centroid\"` or `\"flexible\"`. Methods `\"versatile\"` and `\"flexible\"` are the only two methods that can be used in `descval()` and `descplot()`."
            ,
@@ -668,7 +719,7 @@ components <- data.frame(
           "`tb`"),
   desc = c("The call that produced the result."
            ,
-            "Number of significant decimal digits used as precision. It is given by the user or automatically set to that of the input proximity value with the largest number of significant decimal digits."
+            "Number of significant decimal digits used as precision. It is given by the user or automatically set to the number of significant decimal digits in the input proximity data."
            ,
             "A list of vectors of integer that describes the merging of clusters at each step of the clustering. If a number _j_ in a vector is negative, then singleton cluster _-j_ was merged at this stage. If _j_ is positive, then the merge was with the cluster formed at stage _j_ of the algorithm."
            ,
@@ -718,7 +769,7 @@ The difference between the available hierarchical clustering methods rests in th
 
 - `"ward"`: the distance between clusters is a weighted squared Euclidean distance between the centroids of each cluster. This method is available only for distance data.
 
-- `"centroid"`: the distance between clusters equals the square of the Euclidean distance between the centroids of each cluster. Also known as WPGMC (weighted version) or UPGMC (unweighted version). This method is available only for distance data, which are meant to be squared Euclidean distances. Note that both centroid versions, weighted and unweighted, may yield inversions that make dendrograms difficult to interpret.
+- `"centroid"`: the distance between clusters equals the square of the Euclidean distance between the centroids of each cluster. Also known as WPGMC (weighted version) or UPGMC (unweighted version). This method is available only for distance data. Note that both centroid versions, weighted and unweighted, may yield inversions that make dendrograms difficult to interpret.
 
 - `"flexible"`: the proximity between clusters is a weighted sum of the proximity between clusters in the previous iteration. It depends on the value of `par.method`, in the range [-1, +1], and it is equivalent to `"arithmetic"` linkage when `par.method = 0`.
 
@@ -726,7 +777,7 @@ The difference between the available hierarchical clustering methods rests in th
 
 ### Equivalences with other packages
 
-Except for the cases containing tied distances, the following equivalences hold between function `linkage` in package _mdendro_, function `hclust` in package _stats_, and function `agnes` in package _cluster_. When relevant, weighted (W) or unweighted (U) versions of the linkage methods and the value for `par.method` are indicated:
+Except for the cases containing tied distances, the following equivalences hold between function `linkage` in package _mdendro_, function `hclust` in package _stats_, and function `agnes` in package _cluster_. Special attention must be paid to the equivalence with methods `"centroid"` and `"median"` of function `hclust`, since these methods require the input distances to be squared before calling `hclust` and, consequently, the square root of its results should be taken afterwards. When relevant, weighted (W) or unweighted (U) versions of the linkage methods and the value for `par.method` are indicated:
 
 ```{r echo = FALSE}
 methods <- data.frame(
@@ -753,7 +804,12 @@ knitr::kable(methods, col.names = c("`linkage`", "`hclust`", "`agnes`"))
 
 ## History
 
-#### _mdendro 2.1.0_
+#### _mdendro 2.2_
+
+New function `descval`, that can be used instead of `descplot` when the plots are not needed.
+
+
+#### _mdendro 2.1_
 
 New logical value added to objects of class `linkage`, indicating whether the output dendrogram is a binary tree.
 
@@ -765,7 +821,7 @@ Fully new implementation from scratch, programmed in C++, using the efficient te
 
 #### _mdendro 1.0_
 
-Initial R version based on the [MultiDendrograms](https://deim.urv.cat/~sergio.gomez/multidendrograms.php) Java core for the calculations.
+Initial R version based on the [MultiDendrograms](https://webs-deim.urv.cat/~sergio.gomez/multidendrograms.php) Java core for the calculations.
 
 
 
@@ -773,7 +829,7 @@ Initial R version based on the [MultiDendrograms](https://deim.urv.cat/~sergio.g
 
 - **Alberto Fernández**: Dept. Enginyeria Química, Universitat Rovira i Virgili, Tarragona (Spain). ([email](mailto:alberto.fernandez@urv.cat?subject=[mdendro])) ([ORCID](https://orcid.org/0000-0002-1241-1646)) ([Google Scholar](https://scholar.google.es/citations?user=AbH4r0IAAAAJ)) ([GitHub](https://github.com/albyfs))
 
-- **Sergio Gómez**: Dept. Enginyeria Informàtica i Matemàtiques, Universitat Rovira i Virgili, Tarragona (Spain). ([web](https://deim.urv.cat/~sergio.gomez/)) ([email](mailto:sergio.gomez@urv.cat?subject=[mdendro])) ([ORCID](https://orcid.org/0000-0003-1820-0062)) ([Google Scholar](https://scholar.google.es/citations?user=ETrjkSIAAAAJ)) ([GitHub](https://github.com/sergio-gomez)) ([Twitter](https://twitter.com/SergioGomezJ))
+- **Sergio Gómez**: Dept. Enginyeria Informàtica i Matemàtiques, Universitat Rovira i Virgili, Tarragona (Spain). ([web](https://webs-deim.urv.cat/~sergio.gomez/)) ([email](mailto:sergio.gomez@urv.cat?subject=[mdendro])) ([ORCID](https://orcid.org/0000-0003-1820-0062)) ([Google Scholar](https://scholar.google.es/citations?user=ETrjkSIAAAAJ)) ([GitHub](https://github.com/sergio-gomez)) ([Twitter](https://twitter.com/SergioGomezJ))
 
 
 ## Bibliography

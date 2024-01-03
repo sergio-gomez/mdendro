@@ -24,10 +24,8 @@ descplot(prox, ..., type.prox = "distance", digits = NULL,
 }
 \arguments{
   \item{prox}{A structure of class \code{"dist"} containing non-negative
-    proximity data (distances or similarities). All the linkage methods are used
-    with non-squared proximity data as input, except for method 
-    \code{"centroid"}, which is meant to be used with squared Euclidean 
-    distances.}
+    proximity data (distances or similarities). All the linkage methods are
+    meant to be used with non-squared proximity data as input.}
   \item{type.prox}{A character string to indicate whether the proximity data
     represent \code{"distance"} (default) or \code{"similarity"} between
     objects. Methods \code{"ward"} and \code{"centroid"} cannot be used with 
@@ -39,8 +37,8 @@ descplot(prox, ..., type.prox = "distance", digits = NULL,
     certain precision may become different by increasing its value. Thus, it may
     be responsible of the existence of tied proximity data. If the value of this
     parameter is negative or \code{NULL} (default), then the precision is
-    automatically set to that of the input proximity value with the largest
-    number of significant decimal digits.}
+    automatically set to the number of significant decimal digits in the input
+    proximity data.}
   \item{method}{A character string specifying the linkage method to be used. For
     \code{linkage()}, this should be one of: \code{"single"}, \code{"complete"},
     \code{"arithmetic"}, \code{"geometric"}, \code{"harmonic"},
@@ -110,14 +108,14 @@ descplot(prox, ..., type.prox = "distance", digits = NULL,
       \code{"harmonic"} (\code{par.method=-1}) and \code{"single"}
       (\code{par.method=-Inf}).
     \item \code{"ward"}: the distance between clusters is a weighted squared
-      Euclidean distance between the centroids of each cluster. This method is
+      Euclidean distance between the centroids of each cluster. This method is 
       available only for distance data.
     \item \code{"centroid"}: the distance between clusters equals the square of
-      the Euclidean distance between the centroids of each cluster. Also known
-      as WPGMC (weighted version) or UPGMC (unweighted version). This method is 
-      available only for distance data, which are meant to be squared Euclidean 
-      distances. Note that both centroid versions, weighted and unweighted, may 
-      yield inversions that make dendrograms difficult to interpret.
+      the Euclidean distance between the centroids of each cluster. Also known 
+      as WPGMC (weighted version) or UPGMC (unweighted version). This method is
+      available only for distance data. Note that both centroid versions, 
+      weighted and unweighted, may yield inversions that make dendrograms 
+      difficult to interpret.
     \item \code{"flexible"}: the proximity between clusters is a weighted sum of
       the proximity between clusters in the previous iteration. It depends on
       the value of \code{par.method}, in the range \code{[-1, +1]}, and it is
@@ -147,8 +145,8 @@ descplot(prox, ..., type.prox = "distance", digits = NULL,
   dendrogram obtained. The object is a list with the following components:
   \item{call}{The call that produced the result.}
   \item{digits}{Number of significant decimal digits used as precision. It is
-    given by the user or automatically set to that of the input proximity value
-    with the largest number of significant decimal digits.}
+    given by the user or automatically set to the number of significant decimal
+    digits in the input proximity data.}
   \item{merger}{A list of vectors of integer that describes the merging of
     clusters at each step of the clustering. If a number \eqn{j} in a vector is
     negative, then singleton cluster \eqn{-j} was merged at this stage. If
@@ -194,12 +192,16 @@ descplot(prox, ..., type.prox = "distance", digits = NULL,
   \code{\link{as.hclust}} and \code{\link{cophenetic}}.
 }
 \note{
-  Except for the cases containing tied proximity data, the following
+  Except for the cases containing tied proximity data, the following 
   equivalences hold between function \code{linkage()} in package \emph{mdendro},
-  function \code{\link{hclust}()} in package \emph{stats}, and function
-  \code{\link{agnes}()} in package \emph{cluster}. When relevant, weighted
-  (\code{W}) or unweighted (\code{U}) versions of the linkage methods and the
-  value for \code{par.method} (\eqn{\beta}) are indicated:
+  function \code{\link{hclust}()} in package \emph{stats}, and function 
+  \code{\link{agnes}()} in package \emph{cluster}. Special attention must be 
+  paid to the equivalence with methods \code{"centroid"} and \code{"median"} of 
+  function \code{\link{hclust}()}, since these methods require the input 
+  distances to be squared before calling \code{\link{hclust}()} and, 
+  consequently, the square root of its results should be taken afterwards. When 
+  relevant, weighted (\code{W}) or unweighted (\code{U}) versions of the linkage
+  methods and the value for \code{par.method} (\eqn{\beta}) are indicated:
   \tabular{lll}{
     \code{linkage()} \tab \code{hclust()} \tab \code{agnes()} \cr
     \code{==================} \tab \code{============} \tab

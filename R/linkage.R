@@ -76,9 +76,9 @@ linkage <- function(prox, type.prox = "distance", digits = NULL,
       merger = lnk$merger,
       height = lnk$height,
       range = lnk$range,
-	  order = ord,
+      order = ord,
       coph = lnk$coph,
-	  binary = as.logical(length(lnk$height) == (attr(prox, "Size") - 1L)),
+      binary = as.logical(length(lnk$height) == (attr(prox, "Size") - 1L)),
       cor = lnk$cor,
       sdr = lnk$sdr,
       ac = lnk$ac,
@@ -160,7 +160,10 @@ summary.linkage <- function(object, ...) {
 }
 
 cophenetic.linkage <- function(x) {
-  x$coph
+  # Return cophenetic matrix in order of dendrogram leaves
+  m <- as.matrix(x$coph)
+  m <- m[x$order, x$order]
+  as.dist(m)
 }
 
 as.hclust.linkage <- function(x, ...) {

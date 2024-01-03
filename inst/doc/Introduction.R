@@ -175,6 +175,55 @@ all.equal(lnk$cor, hcl.cor)
 
 all.equal(lnk$ac, agn$ac)
 
+## ----echo = FALSE-------------------------------------------------------------
+data1 <- "size	linkage	hclust	agnes
+100	0.002418476	0.00042316	0.001684678
+200	0.007544279	0.001307783	0.009056216
+300	0.015805522	0.002864888	0.02951194
+400	0.027603853	0.005111802	0.071189168
+500	0.042675239	0.00809769	0.140186185
+600	0.061279169	0.011726028	0.242574352
+700	0.083935329	0.016194075	0.389242691
+800	0.110321289	0.02219432	0.590352282
+900	0.13980338	0.027923515	0.825063014
+1000	0.174352127	0.034507304	1.174618176"
+
+data2 <- "size	linkage	hclust	agnes
+100	0.002410549	0.000430888	0.001698413
+150	0.004601389	0.000794929	0.004301476
+226	0.009277806	0.00163087	0.012544835
+340	0.020123589	0.003722471	0.043541342
+511	0.04417814	0.008454096	0.149150702
+767	0.098688802	0.019515243	0.511564597
+1153	0.225368944	0.051520914	1.828566128
+1734	0.534596482	0.135653079	8.478335091
+2606	1.219858959	0.332794896	35.85584442
+3918	2.776398867	0.809999958	135.047423
+5889	7.077296874	2.201634088	
+8852	14.7496921	4.648856354	
+13305	31.46323871	10.00237813	
+20000	82.56078995	21.75731349	"
+
+dt1 <- read.table(textConnection(data1), header = TRUE, sep = "\t")
+dt2 <- read.table(textConnection(data2), header = TRUE, sep = "\t")
+
+par(mfrow = c(1, 2))
+
+plot(x = dt1$size, y = dt1$agnes, type = "l", col = 2, 
+     xlab = "Size", ylab = "Time (s)")
+lines(x = dt1$size, y = dt1$linkage, type = "l", col = 3)
+lines(x = dt1$size, y = dt1$hclust, type = "l", col = 4)
+legend(x = "topleft", legend = c("agnes", "linkage", "hclust"), col = 2:4, 
+       lty = "solid")
+
+options(scipen = 10)
+plot(x = dt2$size, y = dt2$agnes, type = "l", col = 2, 
+     xlab = "Size", ylab = "Time (s)", log = "xy")
+lines(x = dt2$size, y = dt2$linkage, type = "l", col = 3)
+lines(x = dt2$size, y = dt2$hclust, type = "l", col = 4)
+legend(x = "topleft", legend = c("agnes", "linkage", "hclust"), col = 2:4, 
+       lty = "solid")
+
 ## ----echo = FALSE, warning = FALSE, results = "hide"--------------------------
 data <- "Name	VVMD5.1	VVMD5.2	VVMD7.1	VVMD7.2	VVMD27.1	VVMD27.2	VrZag62.1	VrZag62.2	VrZag79.1	VrZag79.2	VVS2-A1	VVS2.2
 Alfrocheiro	226	238	249	253	179	189	188	200	251	251	145	153
@@ -230,7 +279,6 @@ Borracal	232	238	235	235	181	185	194	194	247	247	135	137
 Fonte Cal	226	234	235	235	183	185	186	186	247	251	135	153"
 
 dt <- read.table(textConnection(data), header = TRUE, sep = "\t", dec = ".")
-# knitr::kable(dt)
 
 n <- nrow(dt)
 cols <- 2:ncol(dt)
@@ -339,11 +387,11 @@ arguments <- data.frame(
           "`measure`",
           "`slope`",
           "`...`"),
-  desc = c("A structure of class `dist` containing non-negative proximity data (distances or similarities). All the linkage methods are used with non-squared proximity data as input, except for method `\"centroid\"`, which is meant to be used with squared Euclidean distances."
+  desc = c("A structure of class `dist` containing non-negative proximity data (distances or similarities). All the linkage methods are meant to be used with non-squared proximity data as input."
            ,
             "A character string to indicate whether the proximity data represent `\"distance\"` (default) or `\"similarity\"` between objects. Methods `\"ward\"` and `\"centroid\"` cannot be used with similarity data as input, while the rest of the linkage methods can be used with both distances and similarities."
            ,
-            "An integer value specifying the precision, i.e., the number of significant decimal digits to be used for the comparisons between proximity data. This is an important parameter, since equal proximity data at a certain precision may become different by increasing its value. Thus, it may be responsible of the existence of tied proximity data. If the value of this parameter is negative or `NULL` (default), then the precision is automatically set to that of the input proximity value with the largest number of significant decimal digits."
+            "An integer value specifying the precision, i.e., the number of significant decimal digits to be used for the comparisons between proximity data. This is an important parameter, since equal proximity data at a certain precision may become different by increasing its value. Thus, it may be responsible of the existence of tied proximity data. If the value of this parameter is negative or `NULL` (default), then the precision is automatically set to the number of significant decimal digits in the input proximity data."
            ,
             "A character string specifying the linkage method to be used. For `linkage()`, this should be one of: `\"single\"`, `\"complete\"`, `\"arithmetic\"`, `\"geometric\"`, `\"harmonic\"`, `\"versatile\"`, `\"ward\"`, `\"centroid\"` or `\"flexible\"`. Methods `\"versatile\"` and `\"flexible\"` are the only two methods that can be used in `descval()` and `descplot()`."
            ,
@@ -439,7 +487,7 @@ components <- data.frame(
           "`tb`"),
   desc = c("The call that produced the result."
            ,
-            "Number of significant decimal digits used as precision. It is given by the user or automatically set to that of the input proximity value with the largest number of significant decimal digits."
+            "Number of significant decimal digits used as precision. It is given by the user or automatically set to the number of significant decimal digits in the input proximity data."
            ,
             "A list of vectors of integer that describes the merging of clusters at each step of the clustering. If a number _j_ in a vector is negative, then singleton cluster _-j_ was merged at this stage. If _j_ is positive, then the merge was with the cluster formed at stage _j_ of the algorithm."
            ,

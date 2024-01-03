@@ -81,9 +81,9 @@ int mdendro::Matrix::getPrecision() const {
   std::ostringstream oss;
   oss.precision(MAX_DIGITS);  // Modify the default precision
   int maxdecimals = 0;
-  for (int i = 0; i < (int)values.size(); i ++) {
+  for (int i = 1; i < this->nrows; i ++) {
     oss.str("");  // Clear string stream
-    oss << this->values[i];
+    oss << this->values[index(i, i-1)];  // Look subdiagonal elements only
     std::string s = oss.str();
     std::size_t found = s.find('.');
     int decimals = (found == std::string::npos)? 0 : (int)(s.size()-found)-1;

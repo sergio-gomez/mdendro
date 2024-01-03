@@ -4,7 +4,7 @@ importFrom("graphics", axis, par, points, polygon, rect, segments, strheight,
     strwidth, text)
 importFrom("grDevices", dev.flush, dev.hold)
 importFrom("Rcpp", evalCpp)
-importFrom("stats", as.dendrogram, as.hclust, cophenetic, is.leaf)
+importFrom("stats", as.dendrogram, as.dist, as.hclust, cophenetic, is.leaf)
 importFrom("utils", str)
 
 export(linkage, descval, descplot)
